@@ -1,13 +1,6 @@
 
 import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
 import { useTheme } from '@/context/ThemeContext';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { Home, FileText, CheckCircle, User, Moon, Sun } from 'lucide-react';
 
 const navigationItems = [
@@ -22,70 +15,95 @@ const ModernSidebar = () => {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <TooltipProvider>
-      <aside className="fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] w-20 bg-background/80 backdrop-blur-lg border-r border-border/50 supports-[backdrop-filter]:bg-background/60">
-        <div className="flex flex-col h-full py-6">
-          {/* Navigation Items */}
-          <nav className="flex-1 space-y-2 px-3">
+    <aside className="sidebar-fixed glass-effect">
+      <div className="d-flex flex-column h-100 py-3">
+        {/* Navigation Items */}
+        <nav className="flex-grow-1 px-3">
+          <div className="d-flex flex-column gap-2">
             {navigationItems.map((item) => {
               const isActive = location.pathname === item.url;
               return (
-                <Tooltip key={item.title} delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <Link
-                      to={item.url}
-                      className={cn(
-                        "flex items-center justify-center w-14 h-14 rounded-xl transition-all duration-200 group relative",
-                        isActive 
-                          ? "bg-brand-green/10 text-brand-green shadow-lg" 
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                      )}
-                    >
-                      <item.icon className={cn(
-                        "h-6 w-6 transition-transform duration-200",
-                        "group-hover:scale-110"
-                      )} />
-                      {isActive && (
-                        <div className="absolute -right-1 top-1/2 -translate-y-1/2 w-1 h-8 bg-brand-green rounded-full" />
-                      )}
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="ml-2">
-                    <p>{item.title}</p>
-                  </TooltipContent>
-                </Tooltip>
+                <div key={item.title} className="position-relative">
+                  <Link
+                    to={item.url}
+                    className={`d-flex align-items-center justify-content-center text-decoration-none rounded-3 position-relative`}
+                    style={{
+                      width: '56px',
+                      height: '56px',
+                      backgroundColor: isActive ? 'rgba(74, 185, 87, 0.1)' : 'transparent',
+                      color: isActive ? 'var(--brand-green)' : 'var(--muted-foreground)',
+                      transition: 'all 0.2s ease',
+                      boxShadow: isActive ? '0 4px 12px rgba(74, 185, 87, 0.2)' : 'none'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        e.target.style.color = 'var(--foreground)';
+                        e.target.style.backgroundColor = 'var(--muted)';
+                      }
+                      e.target.style.transform = 'scale(1.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.target.style.color = 'var(--muted-foreground)';
+                        e.target.style.backgroundColor = 'transparent';
+                      }
+                      e.target.style.transform = 'scale(1)';
+                    }}
+                    title={item.title}
+                  >
+                    <item.icon size={24} />
+                    {isActive && (
+                      <div 
+                        className="position-absolute top-50 translate-middle-y rounded-pill"
+                        style={{
+                          right: '-4px',
+                          width: '4px',
+                          height: '32px',
+                          backgroundColor: 'var(--brand-green)'
+                        }}
+                      />
+                    )}
+                  </Link>
+                </div>
               );
             })}
-          </nav>
-          
-          {/* Separator */}
-          <div className="px-3 my-4">
-            <div className="h-px bg-border/50" />
           </div>
-          
-          {/* Theme Toggle */}
-          <div className="px-3">
-            <Tooltip delayDuration={0}>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={toggleTheme}
-                  className="flex items-center justify-center w-14 h-14 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 group"
-                >
-                  {theme === 'light' ? (
-                    <Moon className="h-6 w-6 transition-transform duration-200 group-hover:scale-110" />
-                  ) : (
-                    <Sun className="h-6 w-6 transition-transform duration-200 group-hover:scale-110" />
-                  )}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="ml-2">
-                <p>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
+        </nav>
+        
+        {/* Separator */}
+        <div className="px-3 my-3">
+          <div style={{ height: '1px', backgroundColor: 'var(--border)' }} />
         </div>
-      </aside>
-    </TooltipProvider>
+        
+        {/* Theme Toggle */}
+        <div className="px-3">
+          <button
+            onClick={toggleTheme}
+            className="d-flex align-items-center justify-content-center text-decoration-none border-0 rounded-3"
+            style={{
+              width: '56px',
+              height: '56px',
+              backgroundColor: 'transparent',
+              color: 'var(--muted-foreground)',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.color = 'var(--foreground)';
+              e.target.style.backgroundColor = 'var(--muted)';
+              e.target.style.transform = 'scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.color = 'var(--muted-foreground)';
+              e.target.style.backgroundColor = 'transparent';
+              e.target.style.transform = 'scale(1)';
+            }}
+            title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+          >
+            {theme === 'light' ? <Moon size={24} /> : <Sun size={24} />}
+          </button>
+        </div>
+      </div>
+    </aside>
   );
 };
 

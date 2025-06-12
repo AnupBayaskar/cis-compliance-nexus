@@ -1,6 +1,5 @@
 
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { ExternalLink, User } from 'lucide-react';
 
@@ -8,59 +7,95 @@ const ModernNavbar = () => {
   const { user, logout } = useAuth();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-16 bg-background/80 backdrop-blur-lg border-b border-border/50 supports-[backdrop-filter]:bg-background/60">
-      <div className="h-full px-6 flex items-center justify-between">
-        {/* Left side - Logo and Brand */}
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-brand-green to-brand-gray rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">SE</span>
+    <nav className="navbar-fixed glass-effect d-flex align-items-center">
+      <div className="container-fluid px-4">
+        <div className="d-flex align-items-center justify-content-between w-100">
+          {/* Left side - Logo and Brand */}
+          <div className="d-flex align-items-center">
+            <div className="d-flex align-items-center">
+              <div 
+                className="d-flex align-items-center justify-content-center me-3 rounded"
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  background: 'linear-gradient(135deg, var(--brand-green) 0%, var(--brand-gray) 100%)'
+                }}
+              >
+                <span className="text-white fw-bold" style={{ fontSize: '14px' }}>SE</span>
+              </div>
+              <Link 
+                to="/" 
+                className="text-decoration-none fs-5 fw-bold gradient-text"
+                style={{ transition: 'opacity 0.2s ease' }}
+                onMouseEnter={(e) => e.target.style.opacity = '0.8'}
+                onMouseLeave={(e) => e.target.style.opacity = '1'}
+              >
+                CIS Web Compliance
+              </Link>
             </div>
-            <Link 
-              to="/" 
-              className="text-xl font-bold bg-gradient-to-r from-brand-green to-brand-gray bg-clip-text text-transparent hover:opacity-80 transition-opacity"
-            >
-              CIS Web Compliance
-            </Link>
           </div>
-        </div>
-        
-        {/* Right side - External link and Auth */}
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="sm" asChild className="hover:bg-muted/50">
+          
+          {/* Right side - External link and Auth */}
+          <div className="d-flex align-items-center">
             <a 
               href="https://smartedge.in" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
+              className="btn btn-link text-decoration-none d-flex align-items-center me-3 p-2"
+              style={{ 
+                color: 'var(--muted-foreground)',
+                transition: 'color 0.2s ease',
+                fontSize: '14px'
+              }}
+              onMouseEnter={(e) => e.target.style.color = 'var(--foreground)'}
+              onMouseLeave={(e) => e.target.style.color = 'var(--muted-foreground)'}
             >
-              <span>SmartEdge.in</span>
-              <ExternalLink className="h-4 w-4" />
+              <span className="me-2">SmartEdge.in</span>
+              <ExternalLink size={16} />
             </a>
-          </Button>
-          
-          {user ? (
-            <div className="flex items-center space-x-3">
-              <Button variant="ghost" size="sm" asChild className="hover:bg-muted/50">
-                <Link to="/profile" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors">
-                  <User className="h-4 w-4" />
+            
+            {user ? (
+              <div className="d-flex align-items-center">
+                <Link 
+                  to="/profile" 
+                  className="btn btn-link text-decoration-none d-flex align-items-center me-3 p-2"
+                  style={{ 
+                    color: 'var(--muted-foreground)',
+                    transition: 'color 0.2s ease',
+                    fontSize: '14px'
+                  }}
+                  onMouseEnter={(e) => e.target.style.color = 'var(--foreground)'}
+                  onMouseLeave={(e) => e.target.style.color = 'var(--muted-foreground)'}
+                >
+                  <User size={16} className="me-2" />
                   <span>{user.name}</span>
                 </Link>
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={logout}
-                className="border-brand-green/20 hover:bg-brand-green/10 hover:text-brand-green hover:border-brand-green/40 transition-all"
-              >
-                Logout
-              </Button>
-            </div>
-          ) : (
-            <Button size="sm" asChild className="bg-brand-green hover:bg-brand-green/90 text-white">
-              <Link to="/auth">Sign In</Link>
-            </Button>
-          )}
+                <button 
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={logout}
+                  style={{
+                    borderColor: 'rgba(74, 185, 87, 0.2)',
+                    color: 'var(--brand-green)',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = 'rgba(74, 185, 87, 0.1)';
+                    e.target.style.borderColor = 'rgba(74, 185, 87, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = 'transparent';
+                    e.target.style.borderColor = 'rgba(74, 185, 87, 0.2)';
+                  }}
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <Link to="/auth" className="btn btn-brand btn-sm">
+                Sign In
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </nav>
