@@ -27,8 +27,8 @@ const ModernNavbar = () => {
                 to="/" 
                 className="text-decoration-none fs-5 fw-bold gradient-text"
                 style={{ transition: 'opacity 0.2s ease' }}
-                onMouseEnter={(e) => e.target.style.opacity = '0.8'}
-                onMouseLeave={(e) => e.target.style.opacity = '1'}
+                onMouseEnter={(e) => (e.currentTarget).style.opacity = '0.8'}
+                onMouseLeave={(e) => (e.currentTarget).style.opacity = '1'}
               >
                 CIS Web Compliance
               </Link>
@@ -47,8 +47,8 @@ const ModernNavbar = () => {
                 transition: 'color 0.2s ease',
                 fontSize: '14px'
               }}
-              onMouseEnter={(e) => e.target.style.color = 'var(--foreground)'}
-              onMouseLeave={(e) => e.target.style.color = 'var(--muted-foreground)'}
+              onMouseEnter={(e) => (e.currentTarget).style.color = 'var(--foreground)'}
+              onMouseLeave={(e) => (e.currentTarget).style.color = 'var(--muted-foreground)'}
             >
               <span className="me-2">SmartEdge.in</span>
               <ExternalLink size={16} />
@@ -64,8 +64,8 @@ const ModernNavbar = () => {
                     transition: 'color 0.2s ease',
                     fontSize: '14px'
                   }}
-                  onMouseEnter={(e) => e.target.style.color = 'var(--foreground)'}
-                  onMouseLeave={(e) => e.target.style.color = 'var(--muted-foreground)'}
+                  onMouseEnter={(e) => (e.currentTarget).style.color = 'var(--foreground)'}
+                  onMouseLeave={(e) => (e.currentTarget).style.color = 'var(--muted-foreground)'}
                 >
                   <User size={16} className="me-2" />
                   <span>{user.name}</span>
@@ -79,12 +79,12 @@ const ModernNavbar = () => {
                     transition: 'all 0.2s ease'
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = 'rgba(74, 185, 87, 0.1)';
-                    e.target.style.borderColor = 'rgba(74, 185, 87, 0.4)';
+                    (e.currentTarget).style.backgroundColor = 'rgba(74, 185, 87, 0.1)';
+                    (e.currentTarget).style.borderColor = 'rgba(74, 185, 87, 0.4)';
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.backgroundColor = 'transparent';
-                    e.target.style.borderColor = 'rgba(74, 185, 87, 0.2)';
+                    (e.currentTarget).style.backgroundColor = 'transparent';
+                    (e.currentTarget).style.borderColor = 'rgba(74, 185, 87, 0.2)';
                   }}
                 >
                   Logout

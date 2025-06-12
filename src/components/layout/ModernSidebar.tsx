@@ -37,17 +37,17 @@ const ModernSidebar = () => {
                     }}
                     onMouseEnter={(e) => {
                       if (!isActive) {
-                        e.target.style.color = 'var(--foreground)';
-                        e.target.style.backgroundColor = 'var(--muted)';
+                        (e.currentTarget).style.color = 'var(--foreground)';
+                        (e.currentTarget).style.backgroundColor = 'var(--muted)';
                       }
-                      e.target.style.transform = 'scale(1.1)';
+                      (e.currentTarget).style.transform = 'scale(1.1)';
                     }}
                     onMouseLeave={(e) => {
                       if (!isActive) {
-                        e.target.style.color = 'var(--muted-foreground)';
-                        e.target.style.backgroundColor = 'transparent';
+                        (e.currentTarget).style.color = 'var(--muted-foreground)';
+                        (e.currentTarget).style.backgroundColor = 'transparent';
                       }
-                      e.target.style.transform = 'scale(1)';
+                      (e.currentTarget).style.transform = 'scale(1)';
                     }}
                     title={item.title}
                   >
@@ -88,14 +88,14 @@ const ModernSidebar = () => {
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
-              e.target.style.color = 'var(--foreground)';
-              e.target.style.backgroundColor = 'var(--muted)';
-              e.target.style.transform = 'scale(1.1)';
+              (e.currentTarget).style.color = 'var(--foreground)';
+              (e.currentTarget).style.backgroundColor = 'var(--muted)';
+              (e.currentTarget).style.transform = 'scale(1.1)';
             }}
             onMouseLeave={(e) => {
-              e.target.style.color = 'var(--muted-foreground)';
-              e.target.style.backgroundColor = 'transparent';
-              e.target.style.transform = 'scale(1)';
+              (e.currentTarget).style.color = 'var(--muted-foreground)';
+              (e.currentTarget).style.backgroundColor = 'transparent';
+              (e.currentTarget).style.transform = 'scale(1)';
             }}
             title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
           >
