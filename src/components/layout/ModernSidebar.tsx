@@ -1,13 +1,6 @@
 
 import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
 import { useTheme } from '@/context/ThemeContext';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { Home, FileText, CheckCircle, User, Moon, Sun } from 'lucide-react';
 
 const navigationItems = [
@@ -21,71 +14,125 @@ const ModernSidebar = () => {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
 
+  const sidebarStyle = {
+    position: 'fixed' as const,
+    left: 0,
+    top: '64px',
+    zIndex: 40,
+    height: 'calc(100vh - 64px)',
+    width: '80px',
+    backgroundColor: 'rgba(var(--bs-body-bg-rgb), 0.8)',
+    backdropFilter: 'blur(16px)',
+    borderRight: '1px solid rgba(var(--bs-border-color-rgb), 0.5)',
+    WebkitBackdropFilter: 'blur(16px)',
+  };
+
+  const getNavItemStyle = (isActive: boolean) => ({
+    width: '56px',
+    height: '56px',
+    borderRadius: '12px',
+    transition: 'all 0.2s ease',
+    position: 'relative' as const,
+    backgroundColor: isActive ? 'rgba(74, 222, 128, 0.1)' : 'transparent',
+    color: isActive ? '#4ade80' : '#6b7280',
+    border: 'none',
+    cursor: 'pointer',
+  });
+
+  const activeIndicatorStyle = {
+    position: 'absolute' as const,
+    right: '-4px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    width: '4px',
+    height: '32px',
+    backgroundColor: '#4ade80',
+    borderRadius: '2px',
+  };
+
   return (
-    <TooltipProvider>
-      <aside className="fixed left-0 top-16 z-40 h-[calc(100vh-4rem)] w-20 bg-background/80 backdrop-blur-lg border-r border-border/50 supports-[backdrop-filter]:bg-background/60">
-        <div className="flex flex-col h-full py-6">
-          {/* Navigation Items */}
-          <nav className="flex-1 space-y-2 px-3">
+    <aside style={sidebarStyle}>
+      <div className="d-flex flex-column h-100 py-4">
+        {/* Navigation Items */}
+        <nav className="flex-grow-1 px-3">
+          <div className="d-flex flex-column gap-2">
             {navigationItems.map((item) => {
               const isActive = location.pathname === item.url;
               return (
-                <Tooltip key={item.title} delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <Link
-                      to={item.url}
-                      className={cn(
-                        "flex items-center justify-center w-14 h-14 rounded-xl transition-all duration-200 group relative",
-                        isActive 
-                          ? "bg-brand-green/10 text-brand-green shadow-lg" 
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                      )}
-                    >
-                      <item.icon className={cn(
-                        "h-6 w-6 transition-transform duration-200",
-                        "group-hover:scale-110"
-                      )} />
-                      {isActive && (
-                        <div className="absolute -right-1 top-1/2 -translate-y-1/2 w-1 h-8 bg-brand-green rounded-full" />
-                      )}
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="ml-2">
-                    <p>{item.title}</p>
-                  </TooltipContent>
-                </Tooltip>
+                <div key={item.title} className="position-relative">
+                  <Link
+                    to={item.url}
+                    className="btn d-flex align-items-center justify-content-center text-decoration-none"
+                    style={getNavItemStyle(isActive)}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor = 'rgba(108, 114, 147, 0.1)';
+                        e.currentTarget.style.color = 'var(--bs-body-color)';
+                      }
+                      e.currentTarget.style.transform = 'scale(1.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.color = '#6b7280';
+                      }
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                    title={item.title}
+                  >
+                    <item.icon size={24} />
+                    {isActive && <div style={activeIndicatorStyle} />}
+                  </Link>
+                </div>
               );
             })}
-          </nav>
-          
-          {/* Separator */}
-          <div className="px-3 my-4">
-            <div className="h-px bg-border/50" />
           </div>
-          
-          {/* Theme Toggle */}
-          <div className="px-3">
-            <Tooltip delayDuration={0}>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={toggleTheme}
-                  className="flex items-center justify-center w-14 h-14 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 group"
-                >
-                  {theme === 'light' ? (
-                    <Moon className="h-6 w-6 transition-transform duration-200 group-hover:scale-110" />
-                  ) : (
-                    <Sun className="h-6 w-6 transition-transform duration-200 group-hover:scale-110" />
-                  )}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="ml-2">
-                <p>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
+        </nav>
+        
+        {/* Separator */}
+        <div className="px-3 my-3">
+          <hr style={{ 
+            margin: 0, 
+            borderColor: 'rgba(var(--bs-border-color-rgb), 0.5)',
+            opacity: 1 
+          }} />
         </div>
-      </aside>
-    </TooltipProvider>
+        
+        {/* Theme Toggle */}
+        <div className="px-3">
+          <button
+            onClick={toggleTheme}
+            className="btn d-flex align-items-center justify-content-center"
+            style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '12px',
+              transition: 'all 0.2s ease',
+              backgroundColor: 'transparent',
+              color: '#6b7280',
+              border: 'none',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(108, 114, 147, 0.1)';
+              e.currentTarget.style.color = 'var(--bs-body-color)';
+              e.currentTarget.style.transform = 'scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = '#6b7280';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+            title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+          >
+            {theme === 'light' ? (
+              <Moon size={24} />
+            ) : (
+              <Sun size={24} />
+            )}
+          </button>
+        </div>
+      </div>
+    </aside>
   );
 };
 
