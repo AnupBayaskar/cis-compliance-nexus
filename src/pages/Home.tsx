@@ -1,201 +1,322 @@
 
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Shield, FileText, Zap, Users, Globe } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { 
+  Shield, 
+  FileText, 
+  CheckCircle, 
+  Globe, 
+  Users, 
+  Award,
+  ArrowRight,
+  ExternalLink,
+  Mail,
+  MapPin,
+  Phone
+} from 'lucide-react';
 
 const Home = () => {
+  const { user } = useAuth();
+
   return (
-    <div className="min-h-screen">
+    <div style={{ minHeight: '100vh' }}>
       {/* Hero Section */}
-      <section className="section-padding bg-gradient-to-br from-background via-muted/20 to-background relative overflow-hidden">
-        <div className="absolute inset-0 bg-grid-black/[0.02] bg-[size:60px_60px]" />
-        <div className="relative z-10 max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl md:text-7xl font-bold mb-8 animate-fade-in">
-            <span className="gradient-text">CIS Web Compliance</span>
-          </h1>
-          <p className="text-xl text-muted-foreground mb-12 animate-fade-in">
-            Professional benchmark compliance platform for enterprise security excellence
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-fade-in">
-            <Button size="lg" asChild className="min-w-[200px] hover-lift">
-              <Link to="/benchmarks">
-                <FileText className="mr-2 h-5 w-5" />
-                View Benchmarks
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild className="min-w-[200px] hover-lift">
-              <Link to="/compliance">
-                <CheckCircle className="mr-2 h-5 w-5" />
-                Compliance Check
-              </Link>
-            </Button>
+      <section className="section-padding" style={{
+        background: 'linear-gradient(135deg, rgba(74, 185, 87, 0.1) 0%, rgba(88, 88, 90, 0.1) 100%)',
+        position: 'relative'
+      }}>
+        <div className="position-absolute top-0 start-0 w-100 h-100" style={{
+          backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(74, 185, 87, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(88, 88, 90, 0.1) 0%, transparent 50%)'
+        }} />
+        
+        <div className="container position-relative">
+          <div className="row justify-content-center text-center">
+            <div className="col-lg-8">
+              <div className="animate-fade-in-up">
+                <h1 className="display-3 fw-bold mb-4 gradient-text animate-float">
+                  CIS Web Compliance
+                </h1>
+                <p className="lead mb-5" style={{ color: 'var(--muted-foreground)', fontSize: '1.25rem' }}>
+                  Streamline your security posture with comprehensive CIS benchmark compliance testing and reporting
+                </p>
+                
+                <div className="d-flex flex-column flex-md-row gap-3 justify-content-center mb-5">
+                  <Link 
+                    to="/benchmarks" 
+                    className="btn btn-brand btn-lg d-flex align-items-center justify-content-center hover-lift"
+                    style={{ padding: '12px 32px' }}
+                  >
+                    <FileText size={20} className="me-2" />
+                    View Benchmarks
+                    <ArrowRight size={20} className="ms-2" />
+                  </Link>
+                  <Link 
+                    to="/compliance" 
+                    className="btn btn-outline-secondary btn-lg d-flex align-items-center justify-content-center hover-lift"
+                    style={{ 
+                      padding: '12px 32px',
+                      borderColor: 'var(--border)',
+                      color: 'var(--foreground)'
+                    }}
+                  >
+                    <CheckCircle size={20} className="me-2" />
+                    Start Compliance Check
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* What is CIS Section */}
+      {/* About CIS Section */}
       <section className="section-padding">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <h2 className="text-4xl font-bold">What is CIS?</h2>
-              <p className="text-lg text-muted-foreground">
-                The Center for Internet Security (CIS) provides globally recognized security standards 
-                that help organizations improve their cybersecurity posture through actionable controls 
-                and benchmarks.
-              </p>
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <Shield className="h-6 w-6 text-brand-green mt-1" />
-                  <div>
-                    <h3 className="font-semibold">Security Controls</h3>
-                    <p className="text-muted-foreground">Proven cybersecurity framework with 18 critical security controls</p>
+        <div className="container">
+          <div className="row align-items-center">
+            <div className="col-lg-6 animate-fade-in-up">
+              <div className="card border-0 glass-effect hover-lift h-100">
+                <div className="card-body p-4">
+                  <div className="d-flex align-items-center mb-3">
+                    <Shield size={32} style={{ color: 'var(--brand-green)' }} className="me-3" />
+                    <h2 className="h3 fw-bold mb-0">About CIS Benchmarks</h2>
                   </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <CheckCircle className="h-6 w-6 text-brand-green mt-1" />
-                  <div>
-                    <h3 className="font-semibold">Configuration Benchmarks</h3>
-                    <p className="text-muted-foreground">Secure configuration guidelines for 100+ technologies</p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <Globe className="h-6 w-6 text-brand-green mt-1" />
-                  <div>
-                    <h3 className="font-semibold">Global Standard</h3>
-                    <p className="text-muted-foreground">Adopted by organizations worldwide for cybersecurity excellence</p>
+                  <p style={{ color: 'var(--muted-foreground)' }}>
+                    The Center for Internet Security (CIS) Benchmarks are globally recognized best practices for securing IT systems and data. 
+                    These comprehensive guidelines help organizations establish a secure baseline configuration for their technology infrastructure.
+                  </p>
+                  <div className="row g-3 mt-3">
+                    <div className="col-6">
+                      <div className="text-center p-3 rounded" style={{ backgroundColor: 'var(--muted)' }}>
+                        <Award size={24} style={{ color: 'var(--brand-green)' }} className="mb-2" />
+                        <div className="fw-semibold">Trusted</div>
+                        <small style={{ color: 'var(--muted-foreground)' }}>Industry Standard</small>
+                      </div>
+                    </div>
+                    <div className="col-6">
+                      <div className="text-center p-3 rounded" style={{ backgroundColor: 'var(--muted)' }}>
+                        <Globe size={24} style={{ color: 'var(--brand-green)' }} className="mb-2" />
+                        <div className="fw-semibold">Global</div>
+                        <small style={{ color: 'var(--muted-foreground)' }}>Recognition</small>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             
-            <Card className="hover-lift">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Shield className="h-6 w-6 text-brand-green" />
-                  <span>CIS Critical Security Controls</span>
-                </CardTitle>
-                <CardDescription>
-                  Essential cybersecurity practices for organizations of all sizes
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span>Inventory & Control of Assets</span>
-                  <CheckCircle className="h-4 w-4 text-brand-green" />
+            <div className="col-lg-6 animate-slide-in-right">
+              <div className="card border-0 glass-effect hover-lift h-100">
+                <div className="card-body p-4">
+                  <h3 className="h4 fw-bold mb-3">How It Works & Importance</h3>
+                  <div className="d-flex flex-column gap-3">
+                    <div className="d-flex">
+                      <div 
+                        className="d-flex align-items-center justify-content-center flex-shrink-0 me-3 rounded-circle"
+                        style={{ 
+                          width: '40px', 
+                          height: '40px', 
+                          backgroundColor: 'rgba(74, 185, 87, 0.1)',
+                          color: 'var(--brand-green)'
+                        }}
+                      >
+                        1
+                      </div>
+                      <div>
+                        <h5 className="fw-semibold mb-1">Assessment</h5>
+                        <p className="mb-0" style={{ color: 'var(--muted-foreground)', fontSize: '0.9rem' }}>
+                          Evaluate your systems against CIS benchmark controls
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="d-flex">
+                      <div 
+                        className="d-flex align-items-center justify-content-center flex-shrink-0 me-3 rounded-circle"
+                        style={{ 
+                          width: '40px', 
+                          height: '40px', 
+                          backgroundColor: 'rgba(74, 185, 87, 0.1)',
+                          color: 'var(--brand-green)'
+                        }}
+                      >
+                        2
+                      </div>
+                      <div>
+                        <h5 className="fw-semibold mb-1">Reporting</h5>
+                        <p className="mb-0" style={{ color: 'var(--muted-foreground)', fontSize: '0.9rem' }}>
+                          Generate comprehensive compliance reports and recommendations
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="d-flex">
+                      <div 
+                        className="d-flex align-items-center justify-content-center flex-shrink-0 me-3 rounded-circle"
+                        style={{ 
+                          width: '40px', 
+                          height: '40px', 
+                          backgroundColor: 'rgba(74, 185, 87, 0.1)',
+                          color: 'var(--brand-green)'
+                        }}
+                      >
+                        3
+                      </div>
+                      <div>
+                        <h5 className="fw-semibold mb-1">Implementation</h5>
+                        <p className="mb-0" style={{ color: 'var(--muted-foreground)', fontSize: '0.9rem' }}>
+                          Apply security controls to improve your compliance posture
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span>Inventory & Control of Software</span>
-                  <CheckCircle className="h-4 w-4 text-brand-green" />
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>Continuous Vulnerability Management</span>
-                  <CheckCircle className="h-4 w-4 text-brand-green" />
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>Controlled Use of Admin Privileges</span>
-                  <CheckCircle className="h-4 w-4 text-brand-green" />
-                </div>
-                <div className="text-center pt-2">
-                  <span className="text-sm text-muted-foreground">+ 14 more controls</span>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* How it Works Section */}
-      <section className="section-padding bg-muted/50">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">How It Works</h2>
-            <p className="text-xl text-muted-foreground">
-              Simple, efficient compliance checking in three easy steps
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="text-center hover-lift">
-              <CardHeader>
-                <div className="w-16 h-16 bg-brand-green/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FileText className="h-8 w-8 text-brand-green" />
+      {/* SmartEdge Section */}
+      <section className="section-padding" style={{ backgroundColor: 'var(--muted)' }}>
+        <div className="container">
+          <div className="row justify-content-center">
+            <div className="col-lg-8 text-center animate-fade-in-up">
+              <div className="card border-0 glass-effect hover-lift">
+                <div className="card-body p-5">
+                  <div className="d-flex align-items-center justify-content-center mb-4">
+                    <div 
+                      className="d-flex align-items-center justify-content-center me-3 rounded-3"
+                      style={{
+                        width: '48px',
+                        height: '48px',
+                        background: 'linear-gradient(135deg, var(--brand-green) 0%, var(--brand-gray) 100%)'
+                      }}
+                    >
+                      <span className="text-white fw-bold fs-5">SE</span>
+                    </div>
+                    <h2 className="h3 fw-bold mb-0 gradient-text">SmartEdge Solutions</h2>
+                  </div>
+                  
+                  <p className="lead mb-4" style={{ color: 'var(--muted-foreground)' }}>
+                    Empowering organizations with cutting-edge cybersecurity solutions and compliance frameworks 
+                    that adapt to the evolving threat landscape.
+                  </p>
+                  
+                  <div className="row g-4 mb-4">
+                    <div className="col-md-4">
+                      <div className="text-center">
+                        <Shield size={32} style={{ color: 'var(--brand-green)' }} className="mb-2" />
+                        <h5 className="fw-semibold">Security First</h5>
+                        <p style={{ color: 'var(--muted-foreground)', fontSize: '0.9rem' }}>
+                          Comprehensive security solutions
+                        </p>
+                      </div>
+                    </div>
+                    <div className="col-md-4">
+                      <div className="text-center">
+                        <Users size={32} style={{ color: 'var(--brand-green)' }} className="mb-2" />
+                        <h5 className="fw-semibold">Expert Team</h5>
+                        <p style={{ color: 'var(--muted-foreground)', fontSize: '0.9rem' }}>
+                          Certified security professionals
+                        </p>
+                      </div>
+                    </div>
+                    <div className="col-md-4">
+                      <div className="text-center">
+                        <Globe size={32} style={{ color: 'var(--brand-green)' }} className="mb-2" />
+                        <h5 className="fw-semibold">Global Reach</h5>
+                        <p style={{ color: 'var(--muted-foreground)', fontSize: '0.9rem' }}>
+                          Serving clients worldwide
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <a 
+                    href="https://smartedge.in" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="btn btn-brand d-inline-flex align-items-center hover-lift"
+                  >
+                    Visit SmartEdge.in
+                    <ExternalLink size={16} className="ms-2" />
+                  </a>
                 </div>
-                <CardTitle>1. Select Benchmark</CardTitle>
-                <CardDescription>
-                  Choose from our comprehensive library of CIS benchmarks for your specific technology stack
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            
-            <Card className="text-center hover-lift">
-              <CardHeader>
-                <div className="w-16 h-16 bg-brand-green/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="h-8 w-8 text-brand-green" />
-                </div>
-                <CardTitle>2. Run Assessment</CardTitle>
-                <CardDescription>
-                  Execute automated compliance checks against your infrastructure and configurations
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            
-            <Card className="text-center hover-lift">
-              <CardHeader>
-                <div className="w-16 h-16 bg-brand-green/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Zap className="h-8 w-8 text-brand-green" />
-                </div>
-                <CardTitle>3. Get Results</CardTitle>
-                <CardDescription>
-                  Receive detailed GRC reports with actionable insights and remediation guidance
-                </CardDescription>
-              </CardHeader>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Importance Section */}
+      {/* Let's Connect Section */}
       <section className="section-padding">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">Why CIS Compliance Matters</h2>
-            <p className="text-xl text-muted-foreground">
-              Essential for modern cybersecurity and regulatory compliance
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="space-y-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-brand-green to-brand-gray rounded-lg flex items-center justify-center">
-                <Shield className="h-6 w-6 text-white" />
+        <div className="container">
+          <div className="row justify-content-center">
+            <div className="col-lg-10">
+              <div className="text-center mb-5 animate-fade-in-up">
+                <h2 className="h3 fw-bold mb-3">Let's Connect</h2>
+                <p className="lead" style={{ color: 'var(--muted-foreground)' }}>
+                  Ready to enhance your security posture? Get in touch with our experts to discuss your compliance needs.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold">Risk Reduction</h3>
-              <p className="text-muted-foreground">
-                Significantly reduce cybersecurity risks through proven security controls and best practices
-              </p>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-brand-green to-brand-gray rounded-lg flex items-center justify-center">
-                <CheckCircle className="h-6 w-6 text-white" />
+              
+              <div className="row g-4">
+                <div className="col-lg-4 animate-fade-in-up">
+                  <div className="card border-0 glass-effect hover-lift h-100 text-center">
+                    <div className="card-body p-4">
+                      <Mail size={32} style={{ color: 'var(--brand-green)' }} className="mb-3" />
+                      <h5 className="fw-semibold mb-2">Email Us</h5>
+                      <p style={{ color: 'var(--muted-foreground)', fontSize: '0.9rem' }}>
+                        Get in touch for compliance consultations
+                      </p>
+                      <a 
+                        href="mailto:info@smartedge.in" 
+                        className="btn btn-outline-secondary btn-sm"
+                        style={{ borderColor: 'var(--brand-green)', color: 'var(--brand-green)' }}
+                      >
+                        Send Message
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="col-lg-4 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                  <div className="card border-0 glass-effect hover-lift h-100 text-center">
+                    <div className="card-body p-4">
+                      <Phone size={32} style={{ color: 'var(--brand-green)' }} className="mb-3" />
+                      <h5 className="fw-semibold mb-2">Call Us</h5>
+                      <p style={{ color: 'var(--muted-foreground)', fontSize: '0.9rem' }}>
+                        Speak directly with our security experts
+                      </p>
+                      <a 
+                        href="tel:+1234567890" 
+                        className="btn btn-outline-secondary btn-sm"
+                        style={{ borderColor: 'var(--brand-green)', color: 'var(--brand-green)' }}
+                      >
+                        Call Now
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="col-lg-4 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                  <div className="card border-0 glass-effect hover-lift h-100 text-center">
+                    <div className="card-body p-4">
+                      <MapPin size={32} style={{ color: 'var(--brand-green)' }} className="mb-3" />
+                      <h5 className="fw-semibold mb-2">Visit Us</h5>
+                      <p style={{ color: 'var(--muted-foreground)', fontSize: '0.9rem' }}>
+                        Meet our team at our office location
+                      </p>
+                      <button 
+                        className="btn btn-outline-secondary btn-sm"
+                        style={{ borderColor: 'var(--brand-green)', color: 'var(--brand-green)' }}
+                      >
+                        Get Directions
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold">Regulatory Compliance</h3>
-              <p className="text-muted-foreground">
-                Meet industry standards and regulatory requirements with confidence and documentation
-              </p>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-brand-green to-brand-gray rounded-lg flex items-center justify-center">
-                <Users className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold">Industry Recognition</h3>
-              <p className="text-muted-foreground">
-                Demonstrate security maturity to clients, partners, and stakeholders with CIS compliance
-              </p>
             </div>
           </div>
         </div>

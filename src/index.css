@@ -1,112 +1,204 @@
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'bootstrap/dist/css/bootstrap.min.css';
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* Inter Font */
+* {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 142 69% 58%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 142 69% 58%;
-    --radius: 0.75rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 142 69% 58%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 142 69% 58%;
+/* CSS Variables for Brand Colors and Theme */
+:root {
+  --brand-green: #4AB957;
+  --brand-gray: #58585A;
+  --background: #ffffff;
+  --foreground: #0f0f23;
+  --muted: #f8f9fa;
+  --muted-foreground: #6c757d;
+  --border: #e9ecef;
+  --primary: var(--brand-green);
+  --primary-foreground: #ffffff;
+  --secondary: #f8f9fa;
+  --secondary-foreground: #495057;
+  --accent: #e9ecef;
+  --accent-foreground: #495057;
+  --destructive: #dc3545;
+  --destructive-foreground: #ffffff;
+  --ring: var(--brand-green);
+  --radius: 0.5rem;
+}
+
+[data-theme="dark"] {
+  --background: #0f0f23;
+  --foreground: #ffffff;
+  --muted: #1a1a2e;
+  --muted-foreground: #8b949e;
+  --border: #30363d;
+  --secondary: #21262d;
+  --secondary-foreground: #f0f6fc;
+  --accent: #30363d;
+  --accent-foreground: #f0f6fc;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Glass morphism effect */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .glass-effect {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Gradient backgrounds */
+.gradient-bg {
+  background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-gray) 100%);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-gray) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Hover effects */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
   }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 142 69% 58%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 142 69% 58%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 142 69% 58%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 142 69% 58%;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
   }
-
-  body {
-    @apply bg-background text-foreground font-inter;
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
-
-  html {
-    scroll-behavior: smooth;
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
-@layer components {
-  .glass-effect {
-    @apply bg-white/10 backdrop-blur-lg border border-white/20;
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.6s ease-out;
+}
+
+/* Custom sidebar styles */
+.sidebar-fixed {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  width: 80px;
+  height: calc(100vh - 64px);
+  z-index: 40;
+}
+
+/* Custom navbar styles */
+.navbar-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  z-index: 50;
+}
+
+/* Main content offset */
+.main-content {
+  margin-left: 80px;
+  padding-top: 64px;
+  min-height: 100vh;
+}
+
+/* Brand colors for buttons and badges */
+.btn-brand {
+  background-color: var(--brand-green);
+  border-color: var(--brand-green);
+  color: white;
+}
+
+.btn-brand:hover {
+  background-color: #399944;
+  border-color: #399944;
+}
+
+.badge-brand {
+  background-color: var(--brand-green);
+  color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sidebar-fixed {
+    width: 60px;
   }
   
-  .gradient-text {
-    @apply bg-gradient-to-r from-brand-green to-brand-gray bg-clip-text text-transparent;
+  .main-content {
+    margin-left: 60px;
   }
-  
-  .hover-lift {
-    @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
-  }
-  
+}
+
+/* Section padding utility */
+.section-padding {
+  padding: 3rem 1rem;
+}
+
+@media (min-width: 768px) {
   .section-padding {
-    @apply px-6 py-16 lg:px-8 lg:py-24;
+    padding: 4rem 2rem;
   }
 }
 
-@layer utilities {
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-green);
 }
