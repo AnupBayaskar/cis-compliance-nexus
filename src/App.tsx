@@ -25,10 +25,10 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <div style={{ minHeight: '100vh', backgroundColor: 'var(--background)' }}>
+            <div className="min-h-screen bg-background">
               <ModernNavbar />
               <ModernSidebar />
-              <main className="main-content">
+              <main className="ml-20 pt-16 min-h-screen">
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/benchmarks" element={<Benchmarks />} />
