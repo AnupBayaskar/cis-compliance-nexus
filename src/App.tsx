@@ -6,9 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
-import { ModernSidebar } from "@/components/layout/ModernSidebar";
-import { ModernNavbar } from "@/components/layout/ModernNavbar";
-import Footer from "@/components/layout/Footer";
+import ModernSidebar from "@/components/layout/ModernSidebar";
+import ModernNavbar from "@/components/layout/ModernNavbar";
 import Home from "./pages/Home";
 import Benchmarks from "./pages/Benchmarks";
 import Compliance from "./pages/Compliance";
@@ -26,22 +25,19 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <div className="min-h-screen flex w-full bg-background">
+            <div className="min-h-screen bg-background">
+              <ModernNavbar />
               <ModernSidebar />
-              <div className="flex-1 flex flex-col ml-16">
-                <ModernNavbar />
-                <main className="flex-1 pt-16 relative">
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/benchmarks" element={<Benchmarks />} />
-                    <Route path="/compliance" element={<Compliance />} />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </main>
-                <Footer />
-              </div>
+              <main className="ml-20 pt-16 min-h-screen">
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/benchmarks" element={<Benchmarks />} />
+                  <Route path="/compliance" element={<Compliance />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
             </div>
           </BrowserRouter>
         </AuthProvider>
