@@ -18,11 +18,12 @@ import {
   Server,
   FileText,
   AlertCircle,
-  Save
+  Save,
+  Minus
 } from 'lucide-react';
 
-// Mock data for demonstration
-const devices = [
+// Mock data for demonstration - will be updated when new devices are added
+const initialDevices = [
   { id: 1, name: 'Production Web Server', type: 'Windows Server 2022', status: 'Active' },
   { id: 2, name: 'Database Server', type: 'Ubuntu 22.04 LTS', status: 'Active' },
   { id: 3, name: 'Application Server', type: 'CentOS 8', status: 'Maintenance' }
@@ -75,6 +76,7 @@ const Compliance = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { saveConfiguration } = useConfiguration();
+  const [devices, setDevices] = useState(initialDevices);
   const [selectedDevice, setSelectedDevice] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [checks, setChecks] = useState(complianceChecks);
@@ -121,10 +123,24 @@ const Compliance = () => {
   };
 
   const handleAddDevice = () => {
-    // In real implementation, this would call API
-    console.log('Adding device:', newDevice);
+    if (!newDevice.name.trim() || !newDevice.type.trim()) {
+      alert('Please fill in at least the device name and type.');
+      return;
+    }
+
+    const newDeviceObj = {
+      id: Date.now(), // Simple ID generation
+      name: newDevice.name,
+      type: newDevice.type,
+      status: 'Active'
+    };
+
+    setDevices(prev => [...prev, newDeviceObj]);
     setNewDevice({ name: '', type: '', description: '' });
     setShowAddDevice(false);
+    
+    // Optional: Auto-select the newly added device
+    setSelectedDevice(newDeviceObj);
   };
 
   const canGenerateReport = checks.every(check => check.status !== null);
@@ -276,32 +292,39 @@ const Compliance = () => {
                       key={check.id}
                       className="flex items-center space-x-4 p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
                     >
-                      {/* Status Checkboxes */}
-                      <div className="flex space-x-2">
-                        <Button
-                          variant={check.status === true ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => handleCheckChange(check.id, true)}
-                          className="p-2"
-                        >
-                          <CheckCircle className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant={check.status === false ? "destructive" : "outline"}
-                          size="sm"
-                          onClick={() => handleCheckChange(check.id, false)}
-                          className="p-2"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant={check.status === null ? "secondary" : "outline"}
-                          size="sm"
-                          onClick={() => handleCheckChange(check.id, null)}
-                          className="p-2"
-                        >
-                          —
-                        </Button>
+                      {/* Status Controls */}
+                      <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-1">
+                          <Checkbox
+                            checked={check.status === true}
+                            onCheckedChange={(checked) => 
+                              handleCheckChange(check.id, checked ? true : null)
+                            }
+                            className="text-green-600"
+                          />
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Checkbox
+                            checked={check.status === false}
+                            onCheckedChange={(checked) => 
+                              handleCheckChange(check.id, checked ? false : null)
+                            }
+                            className="text-red-600"
+                          />
+                          <X className="h-4 w-4 text-red-600" />
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Checkbox
+                            checked={check.status === 'skip'}
+                            onCheckedChange={(checked) => 
+                              handleCheckChange(check.id, checked ? 'skip' : null)
+                            }
+                            className="text-yellow-600"
+                          />
+                          <Minus className="h-4 w-4 text-yellow-600" />
+                          <span className="text-sm text-muted-foreground">Skip</span>
+                        </div>
                       </div>
 
                       {/* Reference ID */}
@@ -380,7 +403,7 @@ const Compliance = () => {
         >
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Device Name</label>
+              <label className="block text-sm font-medium mb-2">Device Name *</label>
               <Input
                 value={newDevice.name}
                 onChange={(e) => setNewDevice({ ...newDevice, name: e.target.value })}
@@ -388,7 +411,7 @@ const Compliance = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Device Type</label>
+              <label className="block text-sm font-medium mb-2">Device Type *</label>
               <Input
                 value={newDevice.type}
                 onChange={(e) => setNewDevice({ ...newDevice, type: e.target.value })}
@@ -404,7 +427,11 @@ const Compliance = () => {
               />
             </div>
             <div className="flex space-x-3 pt-4">
-              <Button onClick={handleAddDevice} className="flex-1">
+              <Button 
+                onClick={handleAddDevice} 
+                className="flex-1"
+                disabled={!newDevice.name.trim() || !newDevice.type.trim()}
+              >
                 Add Device
               </Button>
               <Button variant="outline" onClick={() => setShowAddDevice(false)} className="flex-1">

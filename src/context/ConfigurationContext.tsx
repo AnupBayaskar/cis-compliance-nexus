@@ -7,7 +7,7 @@ interface ComplianceCheck {
   category: string;
   criticality: string;
   description: string;
-  status: boolean | null;
+  status: boolean | null | 'skip';
 }
 
 interface SavedConfiguration {
@@ -89,7 +89,7 @@ export const ConfigurationProvider: React.FC<{ children: React.ReactNode }> = ({
           const totalChecks = config.checks.length;
           const passedChecks = config.checks.filter(check => check.status === true).length;
           const failedChecks = config.checks.filter(check => check.status === false).length;
-          const skippedChecks = config.checks.filter(check => check.status === null).length;
+          const skippedChecks = config.checks.filter(check => check.status === 'skip').length;
           const complianceScore = totalChecks > 0 ? Math.round((passedChecks / totalChecks) * 100) : 0;
 
           return {
