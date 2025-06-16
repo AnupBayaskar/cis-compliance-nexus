@@ -1,9 +1,16 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useReports } from '@/context/ReportsContext';
 import { 
@@ -17,18 +24,58 @@ import {
 
 const Compliance = () => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedDeviceForReport, setSelectedDeviceForReport] = useState('');
   const { toast } = useToast();
-  const { addReport } = useReports();
+  const { addReport, devices, userPreferences, updateUserPreferences } = useReports();
 
-  // Mock compliance data
-  const complianceChecks = [
+  // Mock compliance data with state management
+  const [complianceChecks, setComplianceChecks] = useState([
     { id: 1, name: 'Password Policy', status: 'pass', severity: 'high' },
     { id: 2, name: 'Firewall Configuration', status: 'pass', severity: 'critical' },
     { id: 3, name: 'System Updates', status: 'fail', severity: 'medium' },
     { id: 4, name: 'User Access Controls', status: 'warning', severity: 'high' },
     { id: 5, name: 'Data Encryption', status: 'pass', severity: 'critical' },
     { id: 6, name: 'Audit Logging', status: 'fail', severity: 'high' },
-  ];
+  ]);
+
+  // Load saved preferences on component mount
+  useEffect(() => {
+    if (userPreferences.selectedDevice) {
+      setSelectedDeviceForReport(userPreferences.selectedDevice);
+    }
+    
+    // Restore compliance check states if saved
+    if (Object.keys(userPreferences.complianceChecks).length > 0) {
+      setComplianceChecks(prev => 
+        prev.map(check => ({
+          ...check,
+          status: userPreferences.complianceChecks[check.id] || check.status
+        }))
+      );
+    }
+  }, [userPreferences]);
+
+  // Save device selection
+  const handleDeviceChange = (deviceName: string) => {
+    setSelectedDeviceForReport(deviceName);
+    updateUserPreferences({ selectedDevice: deviceName });
+  };
+
+  // Save compliance check status changes
+  const handleStatusChange = (checkId: number, newStatus: string) => {
+    setComplianceChecks(prev => 
+      prev.map(check => 
+        check.id === checkId ? { ...check, status: newStatus } : check
+      )
+    );
+    
+    updateUserPreferences({
+      complianceChecks: {
+        ...userPreferences.complianceChecks,
+        [checkId]: newStatus
+      }
+    });
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -52,26 +99,33 @@ const Compliance = () => {
   const complianceScore = Math.round((passedChecks / complianceChecks.length) * 100);
 
   const handleGenerateReport = async () => {
+    if (!selectedDeviceForReport) {
+      toast({
+        title: "Device Required",
+        description: "Please select a device before generating a report.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGenerating(true);
     
     try {
       // Simulate report generation delay
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Generate mock report data
-      const deviceName = 'Server-01-Production'; // In real app, this would be selected by user
-      const summary = `Compliance assessment completed for ${deviceName}. ${passedChecks} out of ${complianceChecks.length} checks passed. Critical issues found in system updates and audit logging that require immediate attention.`;
+      const summary = `Compliance assessment completed for ${selectedDeviceForReport}. ${passedChecks} out of ${complianceChecks.length} checks passed. ${complianceChecks.filter(c => c.status === 'fail').length > 0 ? 'Critical issues found that require immediate attention.' : 'System is in good compliance standing.'}`;
       
       // Add report to context
       addReport({
-        deviceName,
+        deviceName: selectedDeviceForReport,
         complianceScore,
         summary
       });
 
       toast({
         title: "Report Generated Successfully",
-        description: `Compliance report for ${deviceName} has been generated and saved.`,
+        description: `Compliance report for ${selectedDeviceForReport} has been generated and saved.`,
       });
 
     } catch (error) {
@@ -94,23 +148,37 @@ const Compliance = () => {
             Monitor and assess your system's compliance status
           </p>
         </div>
-        <Button 
-          onClick={handleGenerateReport}
-          disabled={isGenerating}
-          className="flex items-center gap-2"
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            <>
-              <FileText className="h-4 w-4" />
-              Generate Report
-            </>
-          )}
-        </Button>
+        <div className="flex items-center gap-4">
+          <Select value={selectedDeviceForReport} onValueChange={handleDeviceChange}>
+            <SelectTrigger className="w-60">
+              <SelectValue placeholder="Select a device..." />
+            </SelectTrigger>
+            <SelectContent>
+              {devices.map((device) => (
+                <SelectItem key={device} value={device}>
+                  {device}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button 
+            onClick={handleGenerateReport}
+            disabled={isGenerating || !selectedDeviceForReport}
+            className="flex items-center gap-2"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <FileText className="h-4 w-4" />
+                Generate Report
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Compliance Overview */}
@@ -156,7 +224,7 @@ const Compliance = () => {
         <CardHeader>
           <CardTitle>Compliance Checks</CardTitle>
           <CardDescription>
-            Detailed breakdown of individual compliance requirements
+            Detailed breakdown of individual compliance requirements (click to change status)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -172,7 +240,19 @@ const Compliance = () => {
                     </p>
                   </div>
                 </div>
-                {getStatusBadge(check.status)}
+                <div className="flex items-center gap-2">
+                  <Select value={check.status} onValueChange={(value) => handleStatusChange(check.id, value)}>
+                    <SelectTrigger className="w-28">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pass">Pass</SelectItem>
+                      <SelectItem value="fail">Fail</SelectItem>
+                      <SelectItem value="warning">Warning</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {getStatusBadge(check.status)}
+                </div>
               </div>
             ))}
           </div>

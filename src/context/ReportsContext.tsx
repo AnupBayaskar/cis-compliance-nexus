@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 interface Report {
   id: string;
@@ -9,12 +9,19 @@ interface Report {
   summary: string;
 }
 
+interface UserPreferences {
+  selectedDevice: string;
+  complianceChecks: { [key: number]: string };
+}
+
 interface ReportsContextType {
   reports: Report[];
   addReport: (report: Omit<Report, 'id' | 'generatedAt'>) => void;
   selectedDevice: string;
   setSelectedDevice: (device: string) => void;
   devices: string[];
+  userPreferences: UserPreferences;
+  updateUserPreferences: (preferences: Partial<UserPreferences>) => void;
 }
 
 const ReportsContext = createContext<ReportsContextType | undefined>(undefined);
@@ -31,6 +38,15 @@ export const ReportsProvider = ({ children }: { children: ReactNode }) => {
   const [reports, setReports] = useState<Report[]>([]);
   const [selectedDevice, setSelectedDevice] = useState<string>('');
   
+  // Load saved preferences from localStorage
+  const [userPreferences, setUserPreferences] = useState<UserPreferences>(() => {
+    const saved = localStorage.getItem('userPreferences');
+    return saved ? JSON.parse(saved) : {
+      selectedDevice: '',
+      complianceChecks: {}
+    };
+  });
+  
   // Mock devices - in a real app, this would come from an API
   const devices = [
     'Server-01-Production',
@@ -39,6 +55,18 @@ export const ReportsProvider = ({ children }: { children: ReactNode }) => {
     'Web-Server-Frontend',
     'Security-Gateway'
   ];
+
+  // Save preferences to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('userPreferences', JSON.stringify(userPreferences));
+  }, [userPreferences]);
+
+  const updateUserPreferences = (newPreferences: Partial<UserPreferences>) => {
+    setUserPreferences(prev => ({
+      ...prev,
+      ...newPreferences
+    }));
+  };
 
   const addReport = (reportData: Omit<Report, 'id' | 'generatedAt'>) => {
     const newReport: Report = {
@@ -55,7 +83,9 @@ export const ReportsProvider = ({ children }: { children: ReactNode }) => {
       addReport,
       selectedDevice,
       setSelectedDevice,
-      devices
+      devices,
+      userPreferences,
+      updateUserPreferences
     }}>
       {children}
     </ReportsContext.Provider>
