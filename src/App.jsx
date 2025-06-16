@@ -1,35 +1,32 @@
 
-import React from 'react';
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
-import ModernSidebar from "@/components/layout/ModernSidebar";
 import ModernNavbar from "@/components/layout/ModernNavbar";
+import ModernSidebar from "@/components/layout/ModernSidebar";
+import Footer from "@/components/layout/Footer";
 import Home from "./pages/Home";
 import Benchmarks from "./pages/Benchmarks";
 import Compliance from "./pages/Compliance";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './index.css';
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <ThemeProvider>
-        <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <div className="min-h-screen bg-background">
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <div className="d-flex min-vh-100">
+            <ModernSidebar />
+            <div className="flex-grow-1 d-flex flex-column">
               <ModernNavbar />
-              <ModernSidebar />
-              <main className="ml-20 pt-16 min-h-screen">
+              <main className="flex-grow-1 main-content">
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/benchmarks" element={<Benchmarks />} />
@@ -39,11 +36,12 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>
+              <Footer />
             </div>
-          </BrowserRouter>
-        </AuthProvider>
-      </ThemeProvider>
-    </TooltipProvider>
+          </div>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

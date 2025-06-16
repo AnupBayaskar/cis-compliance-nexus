@@ -1,69 +1,74 @@
 
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { ExternalLink, User } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const ModernNavbar = () => {
   const { user, logout } = useAuth();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-16 bg-background/80 backdrop-blur-lg border-b border-border/50 supports-[backdrop-filter]:bg-background/60">
-      <div className="h-full px-6 flex items-center justify-between">
-        {/* Left side - Logo and Brand */}
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-brand-green to-brand-gray rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">SE</span>
+    <motion.nav 
+      className="navbar navbar-expand-lg fixed-top glass-navbar"
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    >
+      <div className="container-fluid">
+        <div className="d-flex align-items-center justify-content-between w-100">
+          {/* Brand */}
+          <motion.div 
+            className="d-flex align-items-center"
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="brand-logo me-3">
+              <span className="text-white fw-bold">SE</span>
             </div>
-            <Link 
-              to="/" 
-              className="text-xl font-bold bg-gradient-to-r from-brand-green to-brand-gray bg-clip-text text-transparent hover:opacity-80 transition-opacity"
-            >
+            <Link to="/" className="navbar-brand gradient-text fs-4 fw-bold text-decoration-none">
               CIS Web Compliance
             </Link>
-          </div>
-        </div>
-        
-        {/* Right side - External link and Auth */}
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="sm" asChild className="hover:bg-muted/50">
-            <a 
-              href="https://smartedge.in" 
-              target="_blank" 
+          </motion.div>
+
+          {/* Navigation Items */}
+          <div className="d-flex align-items-center gap-3">
+            <motion.a
+              href="https://smartedge.in"
+              target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
+              className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               <span>SmartEdge.in</span>
-              <ExternalLink className="h-4 w-4" />
-            </a>
-          </Button>
-          
-          {user ? (
-            <div className="flex items-center space-x-3">
-              <Button variant="ghost" size="sm" asChild className="hover:bg-muted/50">
-                <Link to="/profile" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors">
-                  <User className="h-4 w-4" />
+              <ExternalLink size={16} />
+            </motion.a>
+
+            {user ? (
+              <div className="d-flex align-items-center gap-3">
+                <Link
+                  to="/profile"
+                  className="btn btn-outline-primary btn-sm d-flex align-items-center gap-2"
+                >
+                  <User size={16} />
                   <span>{user.name}</span>
                 </Link>
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={logout}
-                className="border-brand-green/20 hover:bg-brand-green/10 hover:text-brand-green hover:border-brand-green/40 transition-all"
-              >
-                Logout
-              </Button>
-            </div>
-          ) : (
-            <Button size="sm" asChild className="bg-brand-green hover:bg-brand-green/90 text-white">
-              <Link to="/auth">Sign In</Link>
-            </Button>
-          )}
+                <button
+                  onClick={logout}
+                  className="btn btn-outline-danger btn-sm"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <Link to="/auth" className="btn btn-primary btn-sm">
+                Login
+              </Link>
+            )}
+          </div>
         </div>
       </div>
-    </nav>
+    </motion.nav>
   );
 };
 
