@@ -8,12 +8,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Home, FileText, CheckCircle, User, Moon, Sun } from 'lucide-react';
+import { Home, FileText, CheckCircle, User, Moon, Sun, BarChart3 } from 'lucide-react';
 
 const navigationItems = [
   { title: 'Home', url: '/', icon: Home },
   { title: 'View Benchmarks', url: '/benchmarks', icon: FileText },
   { title: 'Compliance Check', url: '/compliance', icon: CheckCircle },
+  { title: 'Reports', url: '/reports', icon: BarChart3 },
   { title: 'User Profile', url: '/profile', icon: User },
 ];
 

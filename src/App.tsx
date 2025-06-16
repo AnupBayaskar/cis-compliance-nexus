@@ -6,11 +6,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { ReportsProvider } from "@/context/ReportsContext";
 import ModernSidebar from "@/components/layout/ModernSidebar";
 import ModernNavbar from "@/components/layout/ModernNavbar";
 import Home from "./pages/Home";
 import Benchmarks from "./pages/Benchmarks";
 import Compliance from "./pages/Compliance";
+import Reports from "./pages/Reports";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -22,24 +24,27 @@ const App = () => (
     <TooltipProvider>
       <ThemeProvider>
         <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <div className="min-h-screen bg-background">
-              <ModernNavbar />
-              <ModernSidebar />
-              <main className="ml-20 pt-16 min-h-screen">
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/benchmarks" element={<Benchmarks />} />
-                  <Route path="/compliance" element={<Compliance />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </main>
-            </div>
-          </BrowserRouter>
+          <ReportsProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <div className="min-h-screen bg-background">
+                <ModernNavbar />
+                <ModernSidebar />
+                <main className="ml-20 pt-16 min-h-screen">
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/benchmarks" element={<Benchmarks />} />
+                    <Route path="/compliance" element={<Compliance />} />
+                    <Route path="/reports" element={<Reports />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </main>
+              </div>
+            </BrowserRouter>
+          </ReportsProvider>
         </AuthProvider>
       </ThemeProvider>
     </TooltipProvider>
