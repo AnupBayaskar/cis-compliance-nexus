@@ -4,10 +4,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
-import { ModernSidebar } from "@/components/layout/ModernSidebar";
-import { ModernNavbar } from "@/components/layout/ModernNavbar";
+import { AppSidebar } from "@/components/layout/AppSidebar";
+import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Home from "./pages/Home";
 import Benchmarks from "./pages/Benchmarks";
@@ -26,23 +27,26 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <div className="min-h-screen flex w-full bg-background">
-              <ModernSidebar />
-              <div className="flex-1 flex flex-col ml-16">
-                <ModernNavbar />
-                <main className="flex-1 pt-16 relative">
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/benchmarks" element={<Benchmarks />} />
-                    <Route path="/compliance" element={<Compliance />} />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </main>
-                <Footer />
+            <SidebarProvider>
+              <div className="min-h-screen flex w-full">
+                <AppSidebar />
+                <div className="flex-1 flex flex-col">
+                  <Navbar />
+                  <main className="flex-1 pt-16">
+                    <SidebarTrigger className="fixed top-20 left-4 z-40 md:hidden" />
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/benchmarks" element={<Benchmarks />} />
+                      <Route path="/compliance" element={<Compliance />} />
+                      <Route path="/auth" element={<Auth />} />
+                      <Route path="/profile" element={<Profile />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </main>
+                  <Footer />
+                </div>
               </div>
-            </div>
+            </SidebarProvider>
           </BrowserRouter>
         </AuthProvider>
       </ThemeProvider>
