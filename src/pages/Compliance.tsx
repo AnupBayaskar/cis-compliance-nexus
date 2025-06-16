@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import Modal from '@/components/ui/modal';
 import { useAuth } from '@/context/AuthContext';
+import { useConfiguration } from '@/context/ConfigurationContext';
 import { 
   Plus, 
   Search, 
@@ -17,7 +17,8 @@ import {
   HelpCircle, 
   Server,
   FileText,
-  AlertCircle 
+  AlertCircle,
+  Save
 } from 'lucide-react';
 
 // Mock data for demonstration
@@ -73,12 +74,15 @@ const complianceChecks = [
 const Compliance = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { saveConfiguration } = useConfiguration();
   const [selectedDevice, setSelectedDevice] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [checks, setChecks] = useState(complianceChecks);
   const [showAddDevice, setShowAddDevice] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [showCheckDetail, setShowCheckDetail] = useState<any>(null);
+  const [showSaveConfig, setShowSaveConfig] = useState(false);
+  const [configName, setConfigName] = useState('');
   const [newDevice, setNewDevice] = useState({ name: '', type: '', description: '' });
 
   // Redirect to login if not authenticated
@@ -124,6 +128,24 @@ const Compliance = () => {
   };
 
   const canGenerateReport = checks.every(check => check.status !== null);
+  const canSaveConfiguration = selectedDevice && checks.some(check => check.status !== null);
+
+  const handleSaveConfiguration = () => {
+    if (!selectedDevice || !configName.trim()) return;
+    
+    saveConfiguration(
+      configName.trim(),
+      selectedDevice.id,
+      selectedDevice.name,
+      checks
+    );
+    
+    setConfigName('');
+    setShowSaveConfig(false);
+    
+    // Show success message or navigate to saved configurations
+    navigate('/saved-configurations');
+  };
 
   const handleGenerateReport = () => {
     console.log('Generating GRC report...');
@@ -310,26 +332,40 @@ const Compliance = () => {
                   ))}
                 </div>
 
-                {/* Generate Report */}
+                {/* Save Configuration and Generate Report */}
                 <div className="mt-8 pt-6 border-t border-border">
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center mb-4">
                     <div>
-                      <h4 className="font-semibold">Generate GRC Report</h4>
+                      <h4 className="font-semibold">Configuration Actions</h4>
                       <p className="text-sm text-muted-foreground">
-                        {canGenerateReport
-                          ? 'All checks completed. Ready to generate report.'
-                          : `${checks.filter(c => c.status === null).length} checks remaining`}
+                        Save your current selections or generate a report
                       </p>
                     </div>
-                    <Button
-                      onClick={handleGenerateReport}
-                      disabled={!canGenerateReport}
-                      className="min-w-[150px]"
-                    >
-                      <FileText className="mr-2 h-4 w-4" />
-                      Generate Report
-                    </Button>
+                    <div className="flex space-x-3">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowSaveConfig(true)}
+                        disabled={!canSaveConfiguration}
+                        className="min-w-[150px]"
+                      >
+                        <Save className="mr-2 h-4 w-4" />
+                        Save Configuration
+                      </Button>
+                      <Button
+                        onClick={handleGenerateReport}
+                        disabled={!canGenerateReport}
+                        className="min-w-[150px]"
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        Generate Report
+                      </Button>
+                    </div>
                   </div>
+                  {!canGenerateReport && (
+                    <p className="text-sm text-muted-foreground">
+                      {checks.filter(c => c.status === null).length} checks remaining to generate report
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -440,6 +476,45 @@ const Compliance = () => {
               </div>
             </div>
           )}
+        </Modal>
+
+        {/* Save Configuration Modal */}
+        <Modal
+          isOpen={showSaveConfig}
+          onClose={() => setShowSaveConfig(false)}
+          title="Save Configuration"
+        >
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Configuration Name</label>
+              <Input
+                value={configName}
+                onChange={(e) => setConfigName(e.target.value)}
+                placeholder="Enter configuration name"
+              />
+            </div>
+            {selectedDevice && (
+              <div className="p-3 bg-muted/50 rounded-lg">
+                <p className="text-sm"><strong>Device:</strong> {selectedDevice.name}</p>
+                <p className="text-sm"><strong>Type:</strong> {selectedDevice.type}</p>
+                <p className="text-sm">
+                  <strong>Checks:</strong> {checks.filter(c => c.status !== null).length} of {checks.length} completed
+                </p>
+              </div>
+            )}
+            <div className="flex space-x-3 pt-4">
+              <Button 
+                onClick={handleSaveConfiguration} 
+                className="flex-1"
+                disabled={!configName.trim()}
+              >
+                Save Configuration
+              </Button>
+              <Button variant="outline" onClick={() => setShowSaveConfig(false)} className="flex-1">
+                Cancel
+              </Button>
+            </div>
+          </div>
         </Modal>
       </div>
     </div>
