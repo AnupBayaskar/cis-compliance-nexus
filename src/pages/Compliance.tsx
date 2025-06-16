@@ -1,263 +1,447 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
-import { useReports } from '@/context/ReportsContext';
+import { Checkbox } from '@/components/ui/checkbox';
+import Modal from '@/components/ui/modal';
+import { useAuth } from '@/context/AuthContext';
 import { 
-  Shield, 
+  Plus, 
+  Search, 
+  Download, 
   CheckCircle, 
-  XCircle, 
-  AlertTriangle, 
+  X, 
+  HelpCircle, 
+  Server,
   FileText,
-  Loader2
+  AlertCircle 
 } from 'lucide-react';
 
+// Mock data for demonstration
+const devices = [
+  { id: 1, name: 'Production Web Server', type: 'Windows Server 2022', status: 'Active' },
+  { id: 2, name: 'Database Server', type: 'Ubuntu 22.04 LTS', status: 'Active' },
+  { id: 3, name: 'Application Server', type: 'CentOS 8', status: 'Maintenance' }
+];
+
+const complianceChecks = [
+  {
+    id: 'CIS-1.1.1',
+    title: 'Ensure separate partition exists for /tmp',
+    category: 'Initial Setup',
+    criticality: 'High',
+    description: 'The /tmp directory is a world-writable directory used for temporary storage by all users and some applications.',
+    status: null // null = empty, true = check, false = cross
+  },
+  {
+    id: 'CIS-1.1.2',
+    title: 'Ensure nodev option set on /tmp partition',
+    category: 'Initial Setup',
+    criticality: 'Medium',
+    description: 'The nodev mount option specifies that the filesystem cannot contain special devices.',
+    status: null
+  },
+  {
+    id: 'CIS-1.2.1',
+    title: 'Ensure package manager repositories are configured',
+    category: 'Software Updates',
+    criticality: 'High',
+    description: 'Systems need to have package manager repositories configured to ensure they can receive software updates.',
+    status: null
+  },
+  {
+    id: 'CIS-2.1.1',
+    title: 'Ensure xinetd is not installed',
+    category: 'Services',
+    criticality: 'Medium',
+    description: 'The eXtended InterNET Daemon (xinetd) is an open source super daemon.',
+    status: null
+  },
+  {
+    id: 'CIS-3.1.1',
+    title: 'Ensure IP forwarding is disabled',
+    category: 'Network Configuration',
+    criticality: 'High',
+    description: 'The net.ipv4.ip_forward flag is used to tell the system whether it can forward packets.',
+    status: null
+  }
+];
+
 const Compliance = () => {
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedDeviceForReport, setSelectedDeviceForReport] = useState('');
-  const { toast } = useToast();
-  const { addReport, devices, userPreferences, updateUserPreferences } = useReports();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [selectedDevice, setSelectedDevice] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [checks, setChecks] = useState(complianceChecks);
+  const [showAddDevice, setShowAddDevice] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [showCheckDetail, setShowCheckDetail] = useState<any>(null);
+  const [newDevice, setNewDevice] = useState({ name: '', type: '', description: '' });
 
-  // Mock compliance data with state management
-  const [complianceChecks, setComplianceChecks] = useState([
-    { id: 1, name: 'Password Policy', status: 'pass', severity: 'high' },
-    { id: 2, name: 'Firewall Configuration', status: 'pass', severity: 'critical' },
-    { id: 3, name: 'System Updates', status: 'fail', severity: 'medium' },
-    { id: 4, name: 'User Access Controls', status: 'warning', severity: 'high' },
-    { id: 5, name: 'Data Encryption', status: 'pass', severity: 'critical' },
-    { id: 6, name: 'Audit Logging', status: 'fail', severity: 'high' },
-  ]);
-
-  // Load saved preferences on component mount
-  useEffect(() => {
-    if (userPreferences.selectedDevice) {
-      setSelectedDeviceForReport(userPreferences.selectedDevice);
-    }
-    
-    // Restore compliance check states if saved
-    if (Object.keys(userPreferences.complianceChecks).length > 0) {
-      setComplianceChecks(prev => 
-        prev.map(check => ({
-          ...check,
-          status: userPreferences.complianceChecks[check.id] || check.status
-        }))
-      );
-    }
-  }, [userPreferences]);
-
-  // Save device selection
-  const handleDeviceChange = (deviceName: string) => {
-    setSelectedDeviceForReport(deviceName);
-    updateUserPreferences({ selectedDevice: deviceName });
-  };
-
-  // Save compliance check status changes
-  const handleStatusChange = (checkId: number, newStatus: string) => {
-    setComplianceChecks(prev => 
-      prev.map(check => 
-        check.id === checkId ? { ...check, status: newStatus } : check
-      )
+  // Redirect to login if not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center section-padding">
+        <Card className="max-w-md w-full text-center">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-center space-x-2">
+              <AlertCircle className="h-6 w-6 text-amber-500" />
+              <span>Authentication Required</span>
+            </CardTitle>
+            <CardDescription>
+              Please log in to access the compliance check feature
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => navigate('/auth')} className="w-full">
+              Go to Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     );
-    
-    updateUserPreferences({
-      complianceChecks: {
-        ...userPreferences.complianceChecks,
-        [checkId]: newStatus
-      }
-    });
+  }
+
+  const filteredChecks = checks.filter(check =>
+    check.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    check.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleCheckChange = (checkId: string, status: boolean | null) => {
+    setChecks(checks.map(check =>
+      check.id === checkId ? { ...check, status } : check
+    ));
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'pass': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'fail': return <XCircle className="h-4 w-4 text-red-500" />;
-      case 'warning': return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
-      default: return null;
-    }
+  const handleAddDevice = () => {
+    // In real implementation, this would call API
+    console.log('Adding device:', newDevice);
+    setNewDevice({ name: '', type: '', description: '' });
+    setShowAddDevice(false);
   };
 
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      pass: 'bg-green-100 text-green-800',
-      fail: 'bg-red-100 text-red-800',
-      warning: 'bg-yellow-100 text-yellow-800'
-    };
-    return <Badge className={variants[status] || ''}>{status.toUpperCase()}</Badge>;
-  };
+  const canGenerateReport = checks.every(check => check.status !== null);
 
-  const passedChecks = complianceChecks.filter(check => check.status === 'pass').length;
-  const complianceScore = Math.round((passedChecks / complianceChecks.length) * 100);
-
-  const handleGenerateReport = async () => {
-    if (!selectedDeviceForReport) {
-      toast({
-        title: "Device Required",
-        description: "Please select a device before generating a report.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsGenerating(true);
-    
-    try {
-      // Simulate report generation delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const summary = `Compliance assessment completed for ${selectedDeviceForReport}. ${passedChecks} out of ${complianceChecks.length} checks passed. ${complianceChecks.filter(c => c.status === 'fail').length > 0 ? 'Critical issues found that require immediate attention.' : 'System is in good compliance standing.'}`;
-      
-      // Add report to context
-      addReport({
-        deviceName: selectedDeviceForReport,
-        complianceScore,
-        summary
-      });
-
-      toast({
-        title: "Report Generated Successfully",
-        description: `Compliance report for ${selectedDeviceForReport} has been generated and saved.`,
-      });
-
-    } catch (error) {
-      toast({
-        title: "Report Generation Failed",
-        description: "There was an error generating the report. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGenerating(false);
-    }
+  const handleGenerateReport = () => {
+    console.log('Generating GRC report...');
+    // In real implementation, this would call backend to generate report
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Compliance Check</h1>
-          <p className="text-muted-foreground mt-2">
-            Monitor and assess your system's compliance status
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          <Select value={selectedDeviceForReport} onValueChange={handleDeviceChange}>
-            <SelectTrigger className="w-60">
-              <SelectValue placeholder="Select a device..." />
-            </SelectTrigger>
-            <SelectContent>
-              {devices.map((device) => (
-                <SelectItem key={device} value={device}>
-                  {device}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button 
-            onClick={handleGenerateReport}
-            disabled={isGenerating || !selectedDeviceForReport}
-            className="flex items-center gap-2"
+    <div className="min-h-screen section-padding">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">Compliance Check</h1>
+            <p className="text-muted-foreground">
+              Assess your infrastructure against CIS benchmarks
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowHelp(true)}
           >
-            {isGenerating ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              <>
-                <FileText className="h-4 w-4" />
-                Generate Report
-              </>
-            )}
+            <HelpCircle className="mr-2 h-4 w-4" />
+            How to Use
           </Button>
         </div>
-      </div>
 
-      {/* Compliance Overview */}
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Overall Compliance</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
+        {/* Device Selection */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Server className="h-6 w-6" />
+              <span>Select Device</span>
+            </CardTitle>
+            <CardDescription>
+              Choose a device to perform compliance check
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{complianceScore}%</div>
-            <Progress value={complianceScore} className="mt-2" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Passed Checks</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{passedChecks}</div>
-            <p className="text-xs text-muted-foreground">out of {complianceChecks.length} total</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Failed Checks</CardTitle>
-            <XCircle className="h-4 w-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {complianceChecks.length - passedChecks}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+              {devices.map((device) => (
+                <Card
+                  key={device.id}
+                  className={`cursor-pointer transition-all ${
+                    selectedDevice?.id === device.id
+                      ? 'ring-2 ring-brand-green bg-brand-green/5'
+                      : 'hover:shadow-md'
+                  }`}
+                  onClick={() => setSelectedDevice(device)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-semibold">{device.name}</h4>
+                      <Badge variant={device.status === 'Active' ? 'default' : 'secondary'}>
+                        {device.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{device.type}</p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-            <p className="text-xs text-muted-foreground">require attention</p>
+            
+            <Button
+              variant="outline"
+              onClick={() => setShowAddDevice(true)}
+              className="w-full"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add New Device
+            </Button>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Detailed Compliance Checks */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Compliance Checks</CardTitle>
-          <CardDescription>
-            Detailed breakdown of individual compliance requirements (click to change status)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {complianceChecks.map((check) => (
-              <div key={check.id} className="flex items-center justify-between p-4 border border-border rounded-lg">
-                <div className="flex items-center space-x-3">
-                  {getStatusIcon(check.status)}
-                  <div>
-                    <h3 className="font-medium">{check.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Severity: {check.severity}
-                    </p>
+        {/* Compliance Check Section */}
+        {selectedDevice && (
+          <div className="space-y-6">
+            {/* Download Options */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Download Benchmark Files</CardTitle>
+                <CardDescription>
+                  Download benchmark files for {selectedDevice.name}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button variant="outline" className="flex-1">
+                    <Download className="mr-2 h-4 w-4" />
+                    Download PDF
+                  </Button>
+                  <Button variant="outline" className="flex-1">
+                    <Download className="mr-2 h-4 w-4" />
+                    Download CSV
+                  </Button>
+                  <Button variant="outline" className="flex-1">
+                    <Download className="mr-2 h-4 w-4" />
+                    Download JSON
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Compliance Checks */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Compliance Checks</CardTitle>
+                <CardDescription>
+                  Review and mark compliance status for each control
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {/* Search */}
+                <div className="relative mb-6">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by reference ID or title..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+
+                {/* Check List */}
+                <div className="space-y-3">
+                  {filteredChecks.map((check) => (
+                    <div
+                      key={check.id}
+                      className="flex items-center space-x-4 p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      {/* Status Checkboxes */}
+                      <div className="flex space-x-2">
+                        <Button
+                          variant={check.status === true ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handleCheckChange(check.id, true)}
+                          className="p-2"
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant={check.status === false ? "destructive" : "outline"}
+                          size="sm"
+                          onClick={() => handleCheckChange(check.id, false)}
+                          className="p-2"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant={check.status === null ? "secondary" : "outline"}
+                          size="sm"
+                          onClick={() => handleCheckChange(check.id, null)}
+                          className="p-2"
+                        >
+                          —
+                        </Button>
+                      </div>
+
+                      {/* Reference ID */}
+                      <Button
+                        variant="link"
+                        className="font-mono text-brand-green hover:text-brand-green/80 p-0"
+                        onClick={() => setShowCheckDetail(check)}
+                      >
+                        {check.id}
+                      </Button>
+
+                      {/* Title and Details */}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium truncate">{check.title}</h4>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <Badge variant="outline" className="text-xs">
+                            {check.category}
+                          </Badge>
+                          <Badge
+                            variant={check.criticality === 'High' ? 'destructive' : 'secondary'}
+                            className="text-xs"
+                          >
+                            {check.criticality}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Generate Report */}
+                <div className="mt-8 pt-6 border-t border-border">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h4 className="font-semibold">Generate GRC Report</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {canGenerateReport
+                          ? 'All checks completed. Ready to generate report.'
+                          : `${checks.filter(c => c.status === null).length} checks remaining`}
+                      </p>
+                    </div>
+                    <Button
+                      onClick={handleGenerateReport}
+                      disabled={!canGenerateReport}
+                      className="min-w-[150px]"
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      Generate Report
+                    </Button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Select value={check.status} onValueChange={(value) => handleStatusChange(check.id, value)}>
-                    <SelectTrigger className="w-28">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pass">Pass</SelectItem>
-                      <SelectItem value="fail">Fail</SelectItem>
-                      <SelectItem value="warning">Warning</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {getStatusBadge(check.status)}
-                </div>
-              </div>
-            ))}
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        )}
+
+        {/* Modals */}
+        <Modal
+          isOpen={showAddDevice}
+          onClose={() => setShowAddDevice(false)}
+          title="Add New Device"
+        >
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Device Name</label>
+              <Input
+                value={newDevice.name}
+                onChange={(e) => setNewDevice({ ...newDevice, name: e.target.value })}
+                placeholder="Enter device name"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Device Type</label>
+              <Input
+                value={newDevice.type}
+                onChange={(e) => setNewDevice({ ...newDevice, type: e.target.value })}
+                placeholder="e.g., Windows Server 2022, Ubuntu 22.04"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Description</label>
+              <Input
+                value={newDevice.description}
+                onChange={(e) => setNewDevice({ ...newDevice, description: e.target.value })}
+                placeholder="Optional description"
+              />
+            </div>
+            <div className="flex space-x-3 pt-4">
+              <Button onClick={handleAddDevice} className="flex-1">
+                Add Device
+              </Button>
+              <Button variant="outline" onClick={() => setShowAddDevice(false)} className="flex-1">
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </Modal>
+
+        <Modal
+          isOpen={showHelp}
+          onClose={() => setShowHelp(false)}
+          title="How to Use Compliance Check"
+        >
+          <div className="space-y-4">
+            <div className="space-y-3">
+              <div>
+                <h4 className="font-semibold">1. Select a Device</h4>
+                <p className="text-sm text-muted-foreground">
+                  Choose from your registered devices or add a new one to begin assessment
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold">2. Download Benchmarks</h4>
+                <p className="text-sm text-muted-foreground">
+                  Get the latest CIS benchmark files in your preferred format (PDF, CSV, JSON)
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold">3. Review Controls</h4>
+                <p className="text-sm text-muted-foreground">
+                  Go through each security control and mark as compliant (✓), non-compliant (✗), or skip (—)
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold">4. Generate Report</h4>
+                <p className="text-sm text-muted-foreground">
+                  Once all controls are reviewed, generate a comprehensive GRC report for your records
+                </p>
+              </div>
+            </div>
+          </div>
+        </Modal>
+
+        <Modal
+          isOpen={!!showCheckDetail}
+          onClose={() => setShowCheckDetail(null)}
+          title={showCheckDetail?.id || ''}
+          size="lg"
+        >
+          {showCheckDetail && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold mb-2">{showCheckDetail.title}</h3>
+                <div className="flex space-x-2 mb-4">
+                  <Badge variant="outline">{showCheckDetail.category}</Badge>
+                  <Badge variant={showCheckDetail.criticality === 'High' ? 'destructive' : 'secondary'}>
+                    {showCheckDetail.criticality}
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground">{showCheckDetail.description}</p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Remediation Guidance</h4>
+                <p className="text-sm text-muted-foreground">
+                  Detailed implementation steps and configuration examples would be provided here 
+                  from the backend database for this specific control.
+                </p>
+              </div>
+            </div>
+          )}
+        </Modal>
+      </div>
     </div>
   );
 };
