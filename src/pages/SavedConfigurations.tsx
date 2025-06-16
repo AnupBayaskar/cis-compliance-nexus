@@ -13,7 +13,8 @@ import {
   CheckCircle,
   X,
   AlertTriangle,
-  Server
+  Server,
+  ArrowLeft
 } from 'lucide-react';
 import {
   Collapsible,
@@ -23,7 +24,28 @@ import {
 
 const SavedConfigurations = () => {
   const { savedConfigurations, generateReport, deleteConfiguration } = useConfiguration();
+  const [selectedDeviceId, setSelectedDeviceId] = useState<number | null>(null);
   const [expandedConfigs, setExpandedConfigs] = useState<Set<string>>(new Set());
+
+  // Get unique devices from saved configurations
+  const devices = savedConfigurations.reduce((acc, config) => {
+    const existingDevice = acc.find(d => d.id === config.deviceId);
+    if (!existingDevice) {
+      acc.push({
+        id: config.deviceId,
+        name: config.deviceName,
+        configCount: 1
+      });
+    } else {
+      existingDevice.configCount++;
+    }
+    return acc;
+  }, [] as Array<{ id: number; name: string; configCount: number }>);
+
+  // Get configurations for selected device
+  const deviceConfigurations = selectedDeviceId 
+    ? savedConfigurations.filter(config => config.deviceId === selectedDeviceId)
+    : [];
 
   const toggleExpanded = (configId: string) => {
     setExpandedConfigs(prev => {
@@ -47,18 +69,41 @@ const SavedConfigurations = () => {
     }
   };
 
+  const handleBackToDevices = () => {
+    setSelectedDeviceId(null);
+    setExpandedConfigs(new Set());
+  };
+
   return (
     <div className="min-h-screen section-padding">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Saved Configurations</h1>
+          <div className="flex items-center space-x-4 mb-2">
+            {selectedDeviceId && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBackToDevices}
+                className="flex items-center space-x-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Back to Devices</span>
+              </Button>
+            )}
+            <h1 className="text-4xl font-bold">
+              {selectedDeviceId ? 'Device Configurations' : 'Saved Configurations'}
+            </h1>
+          </div>
           <p className="text-muted-foreground">
-            Manage your saved compliance check configurations and generate reports
+            {selectedDeviceId 
+              ? 'Manage compliance check configurations for the selected device'
+              : 'Select a device to view its saved compliance check configurations'
+            }
           </p>
         </div>
 
-        {/* Configurations List */}
+        {/* Content */}
         {savedConfigurations.length === 0 ? (
           <Card className="text-center py-12">
             <CardContent>
@@ -69,9 +114,41 @@ const SavedConfigurations = () => {
               </p>
             </CardContent>
           </Card>
+        ) : selectedDeviceId === null ? (
+          /* Device List View */
+          <div className="space-y-4">
+            {devices.map((device) => (
+              <Card 
+                key={device.id} 
+                className="cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => setSelectedDeviceId(device.id)}
+              >
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Server className="h-8 w-8 text-brand-green" />
+                      <div>
+                        <CardTitle className="text-xl">{device.name}</CardTitle>
+                        <CardDescription>
+                          Device ID: {device.id} • {device.configCount} configuration{device.configCount !== 1 ? 's' : ''}
+                        </CardDescription>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="outline">
+                        {device.configCount} config{device.configCount !== 1 ? 's' : ''}
+                      </Badge>
+                      <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
         ) : (
+          /* Device Configurations View */
           <div className="space-y-6">
-            {savedConfigurations.map((config) => (
+            {deviceConfigurations.map((config) => (
               <Card key={config.id} className="overflow-hidden">
                 <CardHeader>
                   <div className="flex items-center justify-between">
