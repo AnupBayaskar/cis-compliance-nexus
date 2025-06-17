@@ -13,7 +13,6 @@ import Home from "./pages/Home";
 import Benchmarks from "./pages/Benchmarks";
 import Compliance from "./pages/Compliance";
 import SavedConfigurations from "./pages/SavedConfigurations";
-import HowItWorks from "./pages/HowItWorks";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -38,7 +37,6 @@ const App = () => (
                     <Route path="/benchmarks" element={<Benchmarks />} />
                     <Route path="/compliance" element={<Compliance />} />
                     <Route path="/saved-configurations" element={<SavedConfigurations />} />
-                    <Route path="/how-it-works" element={<HowItWorks />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="*" element={<NotFound />} />

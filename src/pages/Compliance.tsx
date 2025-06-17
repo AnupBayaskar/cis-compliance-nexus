@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -20,8 +19,7 @@ import {
   FileText,
   AlertCircle,
   Save,
-  AlertTriangle,
-  RotateCcw
+  Minus
 } from 'lucide-react';
 
 // Mock data for demonstration - will be updated when new devices are added
@@ -38,7 +36,7 @@ const complianceChecks = [
     category: 'Initial Setup',
     criticality: 'High',
     description: 'The /tmp directory is a world-writable directory used for temporary storage by all users and some applications.',
-    status: null // null = empty, true = check, false = cross, 'skip' = skip
+    status: null // null = empty, true = check, false = cross
   },
   {
     id: 'CIS-1.1.2',
@@ -118,14 +116,10 @@ const Compliance = () => {
     check.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleCheckChange = (checkId: string, status: boolean | null | 'skip') => {
+  const handleCheckChange = (checkId: string, status: boolean | null) => {
     setChecks(checks.map(check =>
       check.id === checkId ? { ...check, status } : check
     ));
-  };
-
-  const handleResetChecks = () => {
-    setChecks(checks.map(check => ({ ...check, status: null })));
   };
 
   const handleAddDevice = () => {
@@ -274,23 +268,10 @@ const Compliance = () => {
             {/* Compliance Checks */}
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Compliance Checks</CardTitle>
-                    <CardDescription>
-                      Review and mark compliance status for each control
-                    </CardDescription>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleResetChecks}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    <RotateCcw className="mr-2 h-4 w-4" />
-                    Reset
-                  </Button>
-                </div>
+                <CardTitle>Compliance Checks</CardTitle>
+                <CardDescription>
+                  Review and mark compliance status for each control
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {/* Search */}
@@ -311,30 +292,38 @@ const Compliance = () => {
                       key={check.id}
                       className="flex items-center space-x-4 p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
                     >
-                      {/* Status Controls - Visual Icons */}
+                      {/* Status Controls */}
                       <div className="flex items-center space-x-2">
-                        {/* Pass */}
-                        <div 
-                          className={`cursor-pointer p-1 rounded ${check.status === true ? 'bg-green-100' : ''}`}
-                          onClick={() => handleCheckChange(check.id, check.status === true ? null : true)}
-                        >
-                          <CheckCircle className={`h-6 w-6 ${check.status === true ? 'text-green-600' : 'text-gray-300'}`} />
+                        <div className="flex items-center space-x-1">
+                          <Checkbox
+                            checked={check.status === true}
+                            onCheckedChange={(checked) => 
+                              handleCheckChange(check.id, checked ? true : null)
+                            }
+                            className="text-green-600"
+                          />
+                          <CheckCircle className="h-4 w-4 text-green-600" />
                         </div>
-                        
-                        {/* Fail */}
-                        <div 
-                          className={`cursor-pointer p-1 rounded ${check.status === false ? 'bg-red-100' : ''}`}
-                          onClick={() => handleCheckChange(check.id, check.status === false ? null : false)}
-                        >
-                          <X className={`h-6 w-6 ${check.status === false ? 'text-red-600' : 'text-gray-300'}`} />
+                        <div className="flex items-center space-x-1">
+                          <Checkbox
+                            checked={check.status === false}
+                            onCheckedChange={(checked) => 
+                              handleCheckChange(check.id, checked ? false : null)
+                            }
+                            className="text-red-600"
+                          />
+                          <X className="h-4 w-4 text-red-600" />
                         </div>
-                        
-                        {/* Skip */}
-                        <div 
-                          className={`cursor-pointer p-1 rounded ${check.status === 'skip' ? 'bg-yellow-100' : ''}`}
-                          onClick={() => handleCheckChange(check.id, check.status === 'skip' ? null : 'skip')}
-                        >
-                          <AlertTriangle className={`h-6 w-6 ${check.status === 'skip' ? 'text-yellow-600' : 'text-gray-300'}`} />
+                        <div className="flex items-center space-x-1">
+                          <Checkbox
+                            checked={check.status === 'skip'}
+                            onCheckedChange={(checked) => 
+                              handleCheckChange(check.id, checked ? 'skip' : null)
+                            }
+                            className="text-yellow-600"
+                          />
+                          <Minus className="h-4 w-4 text-yellow-600" />
+                          <span className="text-sm text-muted-foreground">Skip</span>
                         </div>
                       </div>
 
@@ -474,7 +463,7 @@ const Compliance = () => {
               <div>
                 <h4 className="font-semibold">3. Review Controls</h4>
                 <p className="text-sm text-muted-foreground">
-                  Go through each security control and mark as compliant (✓), non-compliant (✗), or skip (⚠️)
+                  Go through each security control and mark as compliant (✓), non-compliant (✗), or skip (—)
                 </p>
               </div>
               <div>
