@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { ExternalLink, User } from 'lucide-react';
+import { ExternalLink, User, HelpCircle } from 'lucide-react';
 
 const ModernNavbar = () => {
   const { user, logout } = useAuth();
@@ -25,8 +25,15 @@ const ModernNavbar = () => {
           </div>
         </div>
         
-        {/* Right side - External link and Auth */}
+        {/* Right side - Navigation and Auth */}
         <div className="flex items-center space-x-4">
+          <Button variant="ghost" size="sm" asChild className="hover:bg-muted/50">
+            <Link to="/how-it-works" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors">
+              <HelpCircle className="h-4 w-4" />
+              <span>How It Works</span>
+            </Link>
+          </Button>
+          
           <Button variant="ghost" size="sm" asChild className="hover:bg-muted/50">
             <a 
               href="https://smartedge.in" 
