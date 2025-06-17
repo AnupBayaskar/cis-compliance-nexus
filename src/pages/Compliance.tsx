@@ -17,7 +17,15 @@ import {
   FileText,
   AlertCircle,
   Save,
-  RotateCcw
+  RotateCcw,
+  CheckCircle,
+  OctagonX,
+  X,
+  BrushIcon,
+  Octagon,
+  Eraser,
+  Check,
+  
 } from 'lucide-react';
 
 // Mock data for demonstration - will be updated when new devices are added
@@ -83,7 +91,16 @@ const Compliance = () => {
   const [showCheckDetail, setShowCheckDetail] = useState<any>(null);
   const [showSaveConfig, setShowSaveConfig] = useState(false);
   const [configName, setConfigName] = useState('');
-  const [newDevice, setNewDevice] = useState({ name: '', type: '', description: '' });
+const [newDevice, setNewDevice] = useState({
+  uuid: crypto.randomUUID(), // or any other UUID generator
+  type: '',
+  ip: '',
+  hostname: '',
+  owner: '',
+  contact: '',
+  email: '',
+  description: '',
+});
 
   // Redirect to login if not authenticated
   if (!user) {
@@ -307,44 +324,59 @@ const Compliance = () => {
                       className="flex items-center space-x-4 p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
                     >
                       {/* Status Controls */}
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => 
-                            handleCheckChange(check.id, check.status === 'pass' ? null : 'pass')
-                          }
-                          className={`p-1 rounded transition-colors ${
-                            check.status === 'pass' 
-                              ? 'bg-green-100 text-green-600' 
-                              : 'hover:bg-green-50 text-gray-400 hover:text-green-600'
-                          }`}
-                        >
-                          ✅
-                        </button>
-                        <button
-                          onClick={() => 
-                            handleCheckChange(check.id, check.status === 'fail' ? null : 'fail')
-                          }
-                          className={`p-1 rounded transition-colors ${
-                            check.status === 'fail' 
-                              ? 'bg-red-100 text-red-600' 
-                              : 'hover:bg-red-50 text-gray-400 hover:text-red-600'
-                          }`}
-                        >
-                          ❌
-                        </button>
-                        <button
-                          onClick={() => 
-                            handleCheckChange(check.id, check.status === 'skip' ? null : 'skip')
-                          }
-                          className={`p-1 rounded transition-colors ${
-                            check.status === 'skip' 
-                              ? 'bg-yellow-100 text-yellow-600' 
-                              : 'hover:bg-yellow-50 text-gray-400 hover:text-yellow-600'
-                          }`}
-                        >
-                          ⚠️
-                        </button>
-                      </div>
+                  <div className="flex items-center space-x-2">
+  <button
+    title="Check"
+    onClick={() =>
+      handleCheckChange(check.id, check.status === 'pass' ? null : 'pass')
+    }
+    className={`p-1 rounded transition-colors ${
+      check.status === 'pass'
+        ? 'bg-green-500 text-white-600'
+        : 'hover:bg-green-150 text-white-400 hover:text-green-600'
+    }`}
+  >
+    <Check className="h-4 w-4" />
+  </button>
+
+  <button
+    title="Cross"
+    onClick={() =>
+      handleCheckChange(check.id, check.status === 'fail' ? null : 'fail')
+    }
+    className={`p-1 rounded transition-colors ${
+      check.status === 'fail'
+        ? 'bg-red-500 text-white-600'
+        : 'hover:bg-red-150 text-white-400 hover:text-red-600'
+    }`}
+  >
+    <X className="h-4 w-4" />
+  </button> 
+
+  <button
+    title="Skip"
+    onClick={() =>
+      handleCheckChange(check.id, check.status === 'skip' ? null : 'skip')
+    }
+    className={`p-1 rounded transition-colors ${
+      check.status === 'skip'
+        ? 'bg-blue-500 text-white-600'
+        : 'hover:bg-blue-150  text-white-400 hover:text-blue-600'
+    }`}
+  >
+    <OctagonX className="h-4 w-4" />
+  </button>
+</div>
+
+<Button
+  title="Reset"
+  variant={check.status === null ? 'secondary' : 'outline'}
+  size="sm"
+  onClick={() => handleCheckChange(check.id, null)}
+  className="p-2"
+>
+  <Eraser className="h-4 w-4" />
+</Button>
 
                       {/* Reference ID */}
                       <Button
@@ -354,7 +386,7 @@ const Compliance = () => {
                       >
                         {check.id}
                       </Button>
-
+                      
                       {/* Title and Details */}
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium truncate">{check.title}</h4>
@@ -415,50 +447,134 @@ const Compliance = () => {
         )}
 
         {/* Modals */}
-        <Modal
-          isOpen={showAddDevice}
-          onClose={() => setShowAddDevice(false)}
-          title="Add New Device"
-        >
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Device Name *</label>
-              <Input
-                value={newDevice.name}
-                onChange={(e) => setNewDevice({ ...newDevice, name: e.target.value })}
-                placeholder="Enter device name"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Device Type *</label>
-              <Input
-                value={newDevice.type}
+  <Modal
+      isOpen={showAddDevice}
+      onClose={() => setShowAddDevice(false)}
+      title="Add New Device"
+    >
+     <div className="border-2 border-green-500 rounded-lg p-4 max-h-[80vh] overflow-y-auto space-y-4">
+        {/* UUID (non-editable) */}
+        <div>
+          <label className="block text-sm font-medium mb-2">Device UUID</label>
+          <Input
+            value={newDevice.uuid}
+            disabled
+            className="bg-gray-100 cursor-not-allowed"
+          />
+        </div>
+
+        {/* Device Type - Radio Buttons */}
+        <div>
+          <label className="block text-sm font-medium mb-2">Device Type *</label>
+          <div className="flex items-center space-x-4">
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name="deviceType"
+                value="OS"
+                checked={newDevice.type === 'OS'}
                 onChange={(e) => setNewDevice({ ...newDevice, type: e.target.value })}
-                placeholder="e.g., Windows Server 2022, Ubuntu 22.04"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Description</label>
-              <Input
-                value={newDevice.description}
-                onChange={(e) => setNewDevice({ ...newDevice, description: e.target.value })}
-                placeholder="Optional description"
+              <span>OS</span>
+            </label>
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name="deviceType"
+                value="Service"
+                checked={newDevice.type === 'Service'}
+                onChange={(e) => setNewDevice({ ...newDevice, type: e.target.value })}
               />
-            </div>
-            <div className="flex space-x-3 pt-4">
-              <Button 
-                onClick={handleAddDevice} 
-                className="flex-1"
-                disabled={!newDevice.name.trim() || !newDevice.type.trim()}
-              >
-                Add Device
-              </Button>
-              <Button variant="outline" onClick={() => setShowAddDevice(false)} className="flex-1">
-                Cancel
-              </Button>
-            </div>
+              <span>Service</span>
+            </label>
           </div>
-        </Modal>
+        </div>
+
+        {/* IP Address */}
+        <div>
+          <label className="block text-sm font-medium mb-2">IP Address *</label>
+          <Input
+            value={newDevice.ip}
+            onChange={(e) => setNewDevice({ ...newDevice, ip: e.target.value })}
+            placeholder="e.g., 192.168.1.100"
+          />
+        </div>
+
+        {/* Host Name */}
+        <div>
+          <label className="block text-sm font-medium mb-2">Host Name *</label>
+          <Input
+            value={newDevice.hostname}
+            onChange={(e) => setNewDevice({ ...newDevice, hostname: e.target.value })}
+            placeholder="Enter hostname"
+          />
+        </div>
+
+        {/* Owner Name */}
+        <div>
+          <label className="block text-sm font-medium mb-2">Owner Name *</label>
+          <Input
+            value={newDevice.owner}
+            onChange={(e) => setNewDevice({ ...newDevice, owner: e.target.value })}
+            placeholder="Enter owner name"
+          />
+        </div>
+
+        {/* Owner Contact Number */}
+        <div>
+          <label className="block text-sm font-medium mb-2">Contact Number *</label>
+          <Input
+            type="tel"
+            value={newDevice.contact}
+            onChange={(e) => setNewDevice({ ...newDevice, contact: e.target.value })}
+            placeholder="e.g., +91 9876543210"
+          />
+        </div>
+
+        {/* Owner Email */}
+        <div>
+          <label className="block text-sm font-medium mb-2">Email Address *</label>
+          <Input
+            type="email"
+            value={newDevice.email}
+            onChange={(e) => setNewDevice({ ...newDevice, email: e.target.value })}
+            placeholder="e.g., admin@example.com"
+          />
+        </div>
+
+        {/* Description */}
+        <div>
+          <label className="block text-sm font-medium mb-2">Description</label>
+          <Input
+            value={newDevice.description}
+            onChange={(e) => setNewDevice({ ...newDevice, description: e.target.value })}
+            placeholder="Optional description"
+          />
+        </div>
+
+        {/* Buttons */}
+        <div className="flex space-x-3 pt-4">
+          <Button
+            onClick={handleAddDevice}
+            className="flex-1"
+            disabled={
+              !newDevice.type || !newDevice.ip || !newDevice.hostname ||
+              !newDevice.owner || !newDevice.contact || !newDevice.email
+            }
+          >
+            Add Device
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setShowAddDevice(false)}
+            className="flex-1"
+          >
+            Cancel
+          </Button>
+        </div>
+      </div>
+    </Modal>
+
 
         <Modal
           isOpen={showHelp}
