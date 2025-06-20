@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/context/AuthContext';
+import { toast } from '@/hooks/use-toast';
+import DeviceDetailsModal from '@/components/DeviceDetailsModal';
 import { 
   User, 
   Server, 
@@ -82,6 +83,8 @@ const userReports = [
 const Profile = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [selectedDevice, setSelectedDevice] = useState(null);
+  const [isDeviceModalOpen, setIsDeviceModalOpen] = useState(false);
 
   // Redirect to login if not authenticated
   if (!user) {
@@ -121,6 +124,29 @@ const Profile = () => {
       case 'In Progress': return 'secondary';
       default: return 'outline';
     }
+  };
+
+  const handleViewDeviceDetails = (device) => {
+    setSelectedDevice(device);
+    setIsDeviceModalOpen(true);
+  };
+
+  const handleCloseDeviceModal = () => {
+    setIsDeviceModalOpen(false);
+    setSelectedDevice(null);
+  };
+
+  const handleDecommissionDevice = (deviceId) => {
+    // In a real app, this would make an API call to decommission the device
+    console.log('Decommissioning device:', deviceId);
+    
+    toast({
+      title: "Device Decommissioned",
+      description: "The device has been successfully decommissioned.",
+    });
+    
+    // Here you would typically update the device list or refetch data
+    // For now, we'll just show the toast notification
   };
 
   return (
@@ -239,7 +265,7 @@ const Profile = () => {
                       variant="outline" 
                       size="sm" 
                       className="w-full mt-3"
-                      onClick={() => navigate('/compliance')}
+                      onClick={() => handleViewDeviceDetails(device)}
                     >
                       View Details
                     </Button>
@@ -328,6 +354,14 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Device Details Modal */}
+        <DeviceDetailsModal
+          device={selectedDevice}
+          isOpen={isDeviceModalOpen}
+          onClose={handleCloseDeviceModal}
+          onDecommission={handleDecommissionDevice}
+        />
       </div>
     </div>
   );
