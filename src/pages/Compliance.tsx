@@ -166,7 +166,17 @@ const [filteredDeviceNames, setFilteredDeviceNames] = useState([]);
     };
 
     setDevices(prev => [...prev, newDeviceObj]);
-    setNewDevice({ name: '', type: '', description: '' });
+    setNewDevice({
+      uuid: crypto.randomUUID(),
+      name: '',
+      type: '',
+      ip: '',
+      hostname: '',
+      owner: '',
+      contact: '',
+      email: '',
+      description: ''
+    });
     setShowAddDevice(false);
     
     // Optional: Auto-select the newly added device
