@@ -92,7 +92,8 @@ const Compliance = () => {
   const [showSaveConfig, setShowSaveConfig] = useState(false);
   const [configName, setConfigName] = useState('');
 const [newDevice, setNewDevice] = useState({
-  uuid: crypto.randomUUID(), // or any other UUID generator
+  uuid: crypto.randomUUID(),
+  name: '', // Added missing name property
   type: '',
   ip: '',
   hostname: '',
@@ -107,7 +108,7 @@ const [deviceOptions] = useState([
   'WebApp-Node',
   'Database-MariaDB',
   'Storage-Drive01',
-]); // Add your device name list here
+]);
 
 const [filteredDeviceNames, setFilteredDeviceNames] = useState([]);
 
