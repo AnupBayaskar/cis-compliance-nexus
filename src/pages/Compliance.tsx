@@ -101,6 +101,16 @@ const [newDevice, setNewDevice] = useState({
   email: '',
   description: '',
 });
+const [deviceOptions] = useState([
+  'Firewall-01',
+  'Linux-Server',
+  'WebApp-Node',
+  'Database-MariaDB',
+  'Storage-Drive01',
+]); // Add your device name list here
+
+const [filteredDeviceNames, setFilteredDeviceNames] = useState([]);
+
 
   // Redirect to login if not authenticated
   if (!user) {
@@ -499,6 +509,42 @@ const [newDevice, setNewDevice] = useState({
             placeholder="e.g., 192.168.1.100"
           />
         </div>
+{/* Device Name - Searchable Dropdown */}
+<div>
+  <label className="block text-sm font-medium mb-2">Device Name *</label>
+ <input
+  type="text"
+  value={newDevice.name}
+  onChange={(e) => {
+    setNewDevice({ ...newDevice, name: e.target.value });
+    setFilteredDeviceNames(
+      deviceOptions.filter((name) =>
+        name.toLowerCase().includes(e.target.value.toLowerCase())
+      )
+    );
+  }}
+  placeholder="Search or type device name"
+  className="w-full bg-[#0F172A] text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+/>
+
+  {filteredDeviceNames.length > 0 && (
+   <ul className="border border-green-600 mt-1 rounded bg-[#0F172A] max-h-40 overflow-y-auto shadow-lg z-10 relative text-white">
+  {filteredDeviceNames.map((option) => (
+    <li
+      key={option}
+      onClick={() => {
+        setNewDevice({ ...newDevice, name: option });
+        setFilteredDeviceNames([]);
+      }}
+      className="px-3 py-2 hover:bg-green-700 cursor-pointer"
+    >
+      {option}
+    </li>
+  ))}
+</ul>
+
+  )}
+</div>
 
         {/* Host Name */}
         <div>
