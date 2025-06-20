@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 // Mock data for demonstration
-const userDevices = [
+const initialUserDevices = [
   { 
     id: 1, 
     name: 'Production Web Server', 
@@ -85,6 +85,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [isDeviceModalOpen, setIsDeviceModalOpen] = useState(false);
+  const [userDevices, setUserDevices] = useState(initialUserDevices);
 
   // Redirect to login if not authenticated
   if (!user) {
@@ -120,6 +121,7 @@ const Profile = () => {
     switch (status) {
       case 'Active': return 'default';
       case 'Maintenance': return 'secondary';
+      case 'Decommissioned': return 'destructive';
       case 'Completed': return 'default';
       case 'In Progress': return 'secondary';
       default: return 'outline';
@@ -137,16 +139,26 @@ const Profile = () => {
   };
 
   const handleDecommissionDevice = (deviceId) => {
-    // In a real app, this would make an API call to decommission the device
+    // Update the device status to 'Decommissioned'
+    setUserDevices(prev => 
+      prev.map(device => 
+        device.id === deviceId 
+          ? { ...device, status: 'Decommissioned' }
+          : device
+      )
+    );
+
+    // Update the selected device if it's the one being decommissioned
+    if (selectedDevice && selectedDevice.id === deviceId) {
+      setSelectedDevice(prev => prev ? { ...prev, status: 'Decommissioned' } : null);
+    }
+    
     console.log('Decommissioning device:', deviceId);
     
     toast({
       title: "Device Decommissioned",
       description: "The device has been successfully decommissioned.",
     });
-    
-    // Here you would typically update the device list or refetch data
-    // For now, we'll just show the toast notification
   };
 
   return (

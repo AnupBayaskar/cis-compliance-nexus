@@ -81,6 +81,7 @@ const DeviceDetailsModal = ({ device, isOpen, onClose, onDecommission }: DeviceD
     switch (status) {
       case 'Active': return 'default';
       case 'Maintenance': return 'secondary';
+      case 'Decommissioned': return 'destructive';
       default: return 'outline';
     }
   };
@@ -90,6 +91,8 @@ const DeviceDetailsModal = ({ device, isOpen, onClose, onDecommission }: DeviceD
     if (score >= 75) return 'text-yellow-600';
     return 'text-red-600';
   };
+
+  const isDecommissioned = device.status === 'Decommissioned';
 
   return (
     <>
@@ -226,34 +229,43 @@ const DeviceDetailsModal = ({ device, isOpen, onClose, onDecommission }: DeviceD
                 Close
               </Button>
               
-              <AlertDialog open={isDecommissionDialogOpen} onOpenChange={setIsDecommissionDialogOpen}>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" className="flex items-center space-x-2">
-                    <AlertTriangle className="h-4 w-4" />
-                    <span>Decommission Device</span>
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="flex items-center space-x-2">
-                      <AlertTriangle className="h-5 w-5 text-destructive" />
+              {!isDecommissioned && (
+                <AlertDialog open={isDecommissionDialogOpen} onOpenChange={setIsDecommissionDialogOpen}>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="flex items-center space-x-2">
+                      <AlertTriangle className="h-4 w-4" />
                       <span>Decommission Device</span>
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to decommission "{device.name}"? This action cannot be undone and will mark the device as inactive. The device will no longer be available for compliance checks.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction 
-                      onClick={handleDecommission}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      Decommission Device
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="flex items-center space-x-2">
+                        <AlertTriangle className="h-5 w-5 text-destructive" />
+                        <span>Decommission Device</span>
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to decommission "{device.name}"? This action cannot be undone and will mark the device as inactive. The device will no longer be available for compliance checks.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={handleDecommission}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Decommission Device
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+
+              {isDecommissioned && (
+                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                  <AlertTriangle className="h-4 w-4" />
+                  <span>Device has been decommissioned</span>
+                </div>
+              )}
             </div>
           </div>
         </DialogContent>
