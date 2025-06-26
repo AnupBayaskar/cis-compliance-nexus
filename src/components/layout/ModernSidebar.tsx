@@ -14,7 +14,7 @@ const navigationItems = [
   { title: 'Home', url: '/', icon: Home },
   { title: 'View Benchmarks', url: '/benchmarks', icon: FileText },
   { title: 'Compliance Check', url: '/compliance', icon: CheckCircle },
-  { title: 'Saved Configurations', url: '/saved-configurations', icon: Save },
+    { title: 'Saved Configurations', url: '/saved-configurations', icon: Save },
   { title: 'User Profile', url: '/profile', icon: User },
 ];
 

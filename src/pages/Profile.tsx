@@ -1,12 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/context/AuthContext';
-import { toast } from '@/hooks/use-toast';
-import DeviceDetailsModal from '@/components/DeviceDetailsModal';
 import { 
   User, 
   Server, 
@@ -19,73 +18,56 @@ import {
   Clock
 } from 'lucide-react';
 
-// Mock data for demonstration
-const initialUserDevices = [
-  { 
-    id: 1, 
-    name: 'Production Web Server', 
-    type: 'Windows Server 2022', 
-    status: 'Active',
-    lastScan: '2024-06-10',
-    compliance: 85
-  },
-  { 
-    id: 2, 
-    name: 'Database Server', 
-    type: 'Ubuntu 22.04 LTS', 
-    status: 'Active',
-    lastScan: '2024-06-09',
-    compliance: 92
-  },
-  { 
-    id: 3, 
-    name: 'Application Server', 
-    type: 'CentOS 8', 
-    status: 'Maintenance',
-    lastScan: '2024-06-05',
-    compliance: 78
-  }
-];
+interface Device {
+  device_id: string;
+  uuid: string;
+  type: 'os' | 'service';
+  device_subtype: string;
+  ip_address: string;
+  machine_name: string;
+  description?: string;
+  owner_name?: string;
+  owner_phone?: string;
+  owner_email?: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  status: 'active' | 'decommissioned';
+  decommissioned_on?: string;
+  decommissioned_by?: string;
+  decommission_details?: string;
 
-const userReports = [
-  {
-    id: 1,
-    device: 'Production Web Server',
-    type: 'CIS Windows Server 2022',
-    date: '2024-06-10',
-    status: 'Completed',
-    compliance: 85,
-    criticalIssues: 3,
-    mediumIssues: 7
-  },
-  {
-    id: 2,
-    device: 'Database Server',
-    type: 'CIS Ubuntu 22.04 LTS',
-    date: '2024-06-09',
-    status: 'Completed',
-    compliance: 92,
-    criticalIssues: 1,
-    mediumIssues: 4
-  },
-  {
-    id: 3,
-    device: 'Application Server',
-    type: 'CIS CentOS 8',
-    date: '2024-06-05',
-    status: 'In Progress',
-    compliance: 78,
-    criticalIssues: 5,
-    mediumIssues: 12
-  }
-];
+  // Report-specific properties (optional)
+  compliance?: number;
+  device?: string;
+  date?: string;
+  criticalIssues?: number;
+  mediumIssues?: number;
+}
 
 const Profile = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [selectedDevice, setSelectedDevice] = useState(null);
-  const [isDeviceModalOpen, setIsDeviceModalOpen] = useState(false);
-  const [userDevices, setUserDevices] = useState(initialUserDevices);
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [loading, setLoading] = useState(true);
+  const API_BASE_URL = 'http://localhost:3000';
+
+  useEffect(() => {
+    const fetchDevices = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(`${API_BASE_URL}/devices`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        setDevices(response.data as Device[]);
+      } catch (error: any) {
+        setDevices([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (user) fetchDevices();
+  }, [user]);
 
   // Redirect to login if not authenticated
   if (!user) {
@@ -121,44 +103,10 @@ const Profile = () => {
     switch (status) {
       case 'Active': return 'default';
       case 'Maintenance': return 'secondary';
-      case 'Decommissioned': return 'destructive';
       case 'Completed': return 'default';
       case 'In Progress': return 'secondary';
       default: return 'outline';
     }
-  };
-
-  const handleViewDeviceDetails = (device) => {
-    setSelectedDevice(device);
-    setIsDeviceModalOpen(true);
-  };
-
-  const handleCloseDeviceModal = () => {
-    setIsDeviceModalOpen(false);
-    setSelectedDevice(null);
-  };
-
-  const handleDecommissionDevice = (deviceId) => {
-    // Update the device status to 'Decommissioned'
-    setUserDevices(prev => 
-      prev.map(device => 
-        device.id === deviceId 
-          ? { ...device, status: 'Decommissioned' }
-          : device
-      )
-    );
-
-    // Update the selected device if it's the one being decommissioned
-    if (selectedDevice && selectedDevice.id === deviceId) {
-      setSelectedDevice(prev => prev ? { ...prev, status: 'Decommissioned' } : null);
-    }
-    
-    console.log('Decommissioning device:', deviceId);
-    
-    toast({
-      title: "Device Decommissioned",
-      description: "The device has been successfully decommissioned.",
-    });
   };
 
   return (
@@ -214,11 +162,11 @@ const Profile = () => {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Total Devices:</span>
-                    <span>{userDevices.length}</span>
+                    <span>{devices.length}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Completed Scans:</span>
-                    <span>{userReports.filter(r => r.status === 'Completed').length}</span>
+                    <span>{devices.filter(d => d.status === 'active').length}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Average Compliance:</span>
@@ -246,46 +194,50 @@ const Profile = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {userDevices.map((device) => (
-                <Card key={device.id} className="hover-lift">
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start mb-3">
-                      <h4 className="font-semibold">{device.name}</h4>
-                      <Badge variant={getStatusColor(device.status)}>
-                        {device.status}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-3">{device.type}</p>
-                    
-                    <Separator className="my-3" />
-                    
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Last Scan:</span>
-                        <span>{device.lastScan}</span>
+            {loading ? (
+              <div className="text-center py-8 text-muted-foreground">Loading devices...</div>
+            ) : devices.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">No devices found. Add a new device to start.</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {devices.map((device) => (
+                  <Card key={device.device_id} className="hover-lift">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <h4 className="font-semibold">{device.machine_name}</h4>
+                        <Badge variant={device.status === 'active' ? 'default' : 'secondary'}>
+                          {device.status}
+                        </Badge>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Compliance:</span>
-                        <span className={getComplianceColor(device.compliance)}>
-                          {device.compliance}%
-                        </span>
+                      <p className="text-sm text-muted-foreground mb-3">{device.device_subtype}</p>
+                      <Separator className="my-3" />
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">IP Address:</span>
+                          <span>{device.ip_address}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Owner:</span>
+                          <span>{device.owner_name || '-'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Added:</span>
+                          <span>{new Date(device.created_at).toLocaleDateString()}</span>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full mt-3"
-                      onClick={() => handleViewDeviceDetails(device)}
-                    >
-                      View Details
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full mt-3"
+                        onClick={() => navigate('/compliance')}
+                      >
+                        View Details
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
             <Button 
               variant="outline" 
               className="w-full mt-4"
@@ -309,8 +261,8 @@ const Profile = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {userReports.map((report) => (
-                <Card key={report.id} className="hover-lift">
+              {devices.map((report) => (
+                <Card key={report.device_id} className="hover-lift">
                   <CardContent className="p-4">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                       <div className="flex-1">
@@ -348,7 +300,7 @@ const Profile = () => {
                           </div>
                         </div>
                         
-                        <Button variant="outline" size="sm" disabled={report.status !== 'Completed'}>
+                        <Button variant="outline" size="sm" disabled={report.status !== 'active'}>
                           <Download className="mr-2 h-4 w-4" />
                           Download
                         </Button>
@@ -366,14 +318,6 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
-
-        {/* Device Details Modal */}
-        <DeviceDetailsModal
-          device={selectedDevice}
-          isOpen={isDeviceModalOpen}
-          onClose={handleCloseDeviceModal}
-          onDecommission={handleDecommissionDevice}
-        />
       </div>
     </div>
   );

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Shield, Mail, Lock, User } from 'lucide-react';
+import { Shield, Mail, Lock, User, Phone } from 'lucide-react';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -17,66 +16,65 @@ const Auth = () => {
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    phone: '',
   });
-
   const { login, register } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const validatePassword = (password: string) => {
+    return password.length >= 6; // Match backend MinLength(6)
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      let success = false;
-
       if (isLogin) {
-        success = await login(formData.email, formData.password);
-        if (success) {
+        const result = await login(formData.email, formData.password);
+        if (result) {
           toast({
-            title: "Welcome back!",
-            description: "You have been successfully logged in.",
+            title: `Welcome back, ${result.user.name}!`,
+            description: 'You have been successfully logged in.',
           });
           navigate('/');
-        } else {
-          toast({
-            title: "Login failed",
-            description: "Invalid email or password.",
-            variant: "destructive",
-          });
         }
       } else {
         if (formData.password !== formData.confirmPassword) {
           toast({
-            title: "Password mismatch",
-            description: "Passwords do not match.",
-            variant: "destructive",
+            title: 'Password mismatch',
+            description: 'Passwords do not match.',
+            variant: 'destructive',
           });
-          setIsLoading(false);
           return;
         }
 
-        success = await register(formData.name, formData.email, formData.password);
-        if (success) {
+        if (!validatePassword(formData.password)) {
           toast({
-            title: "Account created!",
-            description: "Your account has been successfully created.",
+            title: 'Invalid password',
+            description: 'Password must be at least 6 characters long.',
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        const result = await register(formData.name, formData.email, formData.password, formData.phone || undefined);
+        if (result) {
+          toast({
+            title: 'Account created!',
+            description: `Welcome, ${result.user.name}! Your account has been successfully created.`,
           });
           navigate('/');
-        } else {
-          toast({
-            title: "Registration failed",
-            description: "Unable to create account. Please try again.",
-            variant: "destructive",
-          });
         }
       }
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Something went wrong. Please try again.';
       toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
+        title: isLogin ? 'Login failed' : 'Registration failed',
+        description: errorMessage,
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -86,7 +84,7 @@ const Auth = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -113,22 +111,39 @@ const Auth = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="name"
-                    name="name"
-                    type="text"
-                    placeholder="Enter your full name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="pl-10"
-                    required={!isLogin}
-                  />
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="name"
+                      name="name"
+                      type="text"
+                      placeholder="Enter your full name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      className="pl-10"
+                      required={!isLogin}
+                    />
+                  </div>
                 </div>
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number (Optional)</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      placeholder="Enter your phone number"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+              </>
             )}
 
             <div className="space-y-2">
