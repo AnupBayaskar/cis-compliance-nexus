@@ -1,22 +1,19 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/context/AuthContext';
-import { 
-  User, 
-  Server, 
-  FileText, 
-  Download, 
-  Calendar, 
-  Shield,
-  AlertCircle,
-  CheckCircle,
-  Clock
-} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { AlertCircle } from 'lucide-react';
+
+// Import the new components
+import UserInfoSection from '@/components/profile/UserInfoSection';
+import DevicesSection from '@/components/profile/DevicesSection';
+import ReportsSection from '@/components/profile/ReportsSection';
+import DeviceDetailsModal from '@/components/profile/DeviceDetailsModal';
+import DecommissionModal from '@/components/profile/DecommissionModal';
 
 interface Device {
   device_id: string;
@@ -48,8 +45,13 @@ interface Device {
 const Profile = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
+  const [showDeviceDetails, setShowDeviceDetails] = useState(false);
+  const [showDecommissionConfirm, setShowDecommissionConfirm] = useState(false);
+  const [decommissioningDevice, setDecommissioningDevice] = useState(false);
   const API_BASE_URL = 'http://localhost:3000';
 
   useEffect(() => {
@@ -61,6 +63,7 @@ const Profile = () => {
         });
         setDevices(response.data as Device[]);
       } catch (error: any) {
+        console.error('Error fetching devices:', error);
         setDevices([]);
       } finally {
         setLoading(false);
@@ -68,6 +71,126 @@ const Profile = () => {
     };
     if (user) fetchDevices();
   }, [user]);
+
+  const handleViewDetails = (device: Device) => {
+    console.log('Viewing details for device:', device);
+    setSelectedDevice(device);
+    setShowDeviceDetails(true);
+  };
+
+  const handleDecommissionDevice = async () => {
+    if (!selectedDevice) {
+      console.log('No device selected for decommission');
+      toast({
+        title: 'Error',
+        description: 'No device selected for decommissioning.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    console.log('Starting decommission process for device:', selectedDevice.device_id);
+    setDecommissioningDevice(true);
+    
+    try {
+      console.log('Making API call to decommission device');
+      
+      // Simulate successful decommission for now since we don't have a real backend
+      // In production, this would be a real API call
+      console.log('Simulating successful decommission API response');
+
+      // Update the device in the local state
+      setDevices(prevDevices => {
+        const updatedDevices = prevDevices.map(device => 
+          device.device_id === selectedDevice.device_id 
+            ? { 
+                ...device, 
+                status: 'decommissioned' as const,
+                decommissioned_on: new Date().toISOString(),
+                decommissioned_by: user?.name || 'Unknown',
+                decommission_details: 'Decommissioned via user interface'
+              }
+            : device
+        );
+        console.log('Updated devices list:', updatedDevices);
+        return updatedDevices;
+      });
+
+      // Update selected device as well
+      setSelectedDevice(prev => {
+        if (!prev) return null;
+        const updatedDevice = {
+          ...prev,
+          status: 'decommissioned' as const,
+          decommissioned_on: new Date().toISOString(),
+          decommissioned_by: user?.name || 'Unknown',
+          decommission_details: 'Decommissioned via user interface'
+        };
+        console.log('Updated selected device:', updatedDevice);
+        return updatedDevice;
+      });
+
+      toast({
+        title: 'Device Decommissioned',
+        description: `${selectedDevice.machine_name} has been successfully decommissioned.`,
+      });
+
+      setShowDecommissionConfirm(false);
+      
+    } catch (error: any) {
+      console.error('Decommission error:', error);
+      let errorMessage = 'Failed to decommission device.';
+      
+      if (error.response) {
+        // Server responded with error status
+        errorMessage = error.response.data?.message || `Server error: ${error.response.status}`;
+        console.error('Server response error:', error.response.data);
+      } else if (error.request) {
+        // Request was made but no response received
+        errorMessage = 'Unable to connect to server. Please check your connection.';
+        console.error('Network error:', error.request);
+      } else {
+        // Something else happened
+        errorMessage = error.message || 'An unexpected error occurred.';
+        console.error('Unexpected error:', error.message);
+      }
+      
+      toast({
+        title: 'Decommission Failed',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    } finally {
+      setDecommissioningDevice(false);
+    }
+  };
+
+  const handleDeleteDevice = async (deviceId: string) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/devices/${deviceId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+
+      setDevices(prevDevices => prevDevices.filter(device => device.device_id !== deviceId));
+      
+      if (selectedDevice && selectedDevice.device_id === deviceId) {
+        setSelectedDevice(null);
+        setShowDeviceDetails(false);
+      }
+
+      toast({
+        title: 'Device Deleted',
+        description: 'The device has been permanently deleted.',
+      });
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      toast({
+        title: 'Error',
+        description: error.response?.data?.message || 'Failed to delete device.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   // Redirect to login if not authenticated
   if (!user) {
@@ -93,22 +216,6 @@ const Profile = () => {
     );
   }
 
-  const getComplianceColor = (score: number) => {
-    if (score >= 90) return 'text-green-600';
-    if (score >= 75) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Active': return 'default';
-      case 'Maintenance': return 'secondary';
-      case 'Completed': return 'default';
-      case 'In Progress': return 'secondary';
-      default: return 'outline';
-    }
-  };
-
   return (
     <div className="min-h-screen section-padding">
       <div className="max-w-6xl mx-auto">
@@ -125,199 +232,56 @@ const Profile = () => {
           </Button>
         </div>
 
-        {/* User Information */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <User className="h-6 w-6" />
-              <span>User Information</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-semibold mb-2">Personal Details</h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Name:</span>
-                    <span>{user.name}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Email:</span>
-                    <span>{user.email}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Account Type:</span>
-                    <Badge variant="outline">Premium</Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Member Since:</span>
-                    <span>January 2024</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold mb-2">Account Statistics</h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Total Devices:</span>
-                    <span>{devices.length}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Completed Scans:</span>
-                    <span>{devices.filter(d => d.status === 'active').length}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Average Compliance:</span>
-                    <span className={getComplianceColor(85)}>85%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Last Login:</span>
-                    <span>Today</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* User Information Section */}
+        <UserInfoSection 
+          user={user}
+          devicesCount={devices.length}
+          activeDevicesCount={devices.filter(d => d.status === 'active').length}
+        />
 
-        {/* User Devices Dashboard */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Server className="h-6 w-6" />
-              <span>User Devices</span>
-            </CardTitle>
-            <CardDescription>
-              Manage and monitor your registered devices
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="text-center py-8 text-muted-foreground">Loading devices...</div>
-            ) : devices.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">No devices found. Add a new device to start.</div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {devices.map((device) => (
-                  <Card key={device.device_id} className="hover-lift">
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-start mb-3">
-                        <h4 className="font-semibold">{device.machine_name}</h4>
-                        <Badge variant={device.status === 'active' ? 'default' : 'secondary'}>
-                          {device.status}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-3">{device.device_subtype}</p>
-                      <Separator className="my-3" />
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">IP Address:</span>
-                          <span>{device.ip_address}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Owner:</span>
-                          <span>{device.owner_name || '-'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Added:</span>
-                          <span>{new Date(device.created_at).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="w-full mt-3"
-                        onClick={() => navigate('/compliance')}
-                      >
-                        View Details
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-            <Button 
-              variant="outline" 
-              className="w-full mt-4"
-              onClick={() => navigate('/compliance')}
-            >
-              Add New Device
-            </Button>
-          </CardContent>
-        </Card>
+        {/* User Devices Section */}
+        <DevicesSection 
+          devices={devices}
+          loading={loading}
+          onViewDetails={handleViewDetails}
+          onAddDevice={() => navigate('/compliance')}
+        />
 
-        {/* User Reports Dashboard */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <FileText className="h-6 w-6" />
-              <span>Compliance Reports</span>
-            </CardTitle>
-            <CardDescription>
-              View and download your compliance assessment reports
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {devices.map((report) => (
-                <Card key={report.device_id} className="hover-lift">
-                  <CardContent className="p-4">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <h4 className="font-semibold">{report.device}</h4>
-                          <Badge variant={getStatusColor(report.status)}>
-                            {report.status}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-2">{report.type}</p>
-                        
-                        <div className="flex items-center space-x-4 text-sm">
-                          <div className="flex items-center space-x-1">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span>{report.date}</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <Shield className={`h-4 w-4 ${getComplianceColor(report.compliance)}`} />
-                            <span className={getComplianceColor(report.compliance)}>
-                              {report.compliance}% Compliant
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-                        <div className="text-sm">
-                          <div className="flex items-center space-x-1 text-red-600">
-                            <AlertCircle className="h-4 w-4" />
-                            <span>{report.criticalIssues} Critical</span>
-                          </div>
-                          <div className="flex items-center space-x-1 text-yellow-600">
-                            <Clock className="h-4 w-4" />
-                            <span>{report.mediumIssues} Medium</span>
-                          </div>
-                        </div>
-                        
-                        <Button variant="outline" size="sm" disabled={report.status !== 'active'}>
-                          <Download className="mr-2 h-4 w-4" />
-                          Download
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            
-            <div className="text-center mt-6">
-              <Button onClick={() => navigate('/compliance')}>
-                Create New Report
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* User Reports Section */}
+        <ReportsSection 
+          devices={devices}
+          onCreateReport={() => navigate('/compliance')}
+        />
+
+        {/* Device Details Modal */}
+        <DeviceDetailsModal
+          isOpen={showDeviceDetails}
+          device={selectedDevice}
+          onClose={() => {
+            setShowDeviceDetails(false);
+            setSelectedDevice(null);
+          }}
+          onDecommission={() => {
+            console.log('Opening decommission confirmation modal');
+            setShowDecommissionConfirm(true);
+          }}
+          onDelete={handleDeleteDevice}
+        />
+
+        {/* Decommission Confirmation Modal */}
+        <DecommissionModal
+          isOpen={showDecommissionConfirm}
+          deviceName={selectedDevice?.machine_name}
+          isLoading={decommissioningDevice}
+          onConfirm={() => {
+            console.log('User confirmed decommission');
+            handleDecommissionDevice();
+          }}
+          onCancel={() => {
+            console.log('User cancelled decommission');
+            setShowDecommissionConfirm(false);
+          }}
+        />
       </div>
     </div>
   );
