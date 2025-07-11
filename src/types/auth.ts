@@ -10,6 +10,7 @@ export interface User {
   organizationName: string;
   avatar?: string;
   teams: string[];
+  createdAt: string;
 }
 
 export interface AuthContextType {

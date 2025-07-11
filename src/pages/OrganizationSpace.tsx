@@ -146,7 +146,7 @@ export default function OrganizationSpace() {
 
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold">Your Organizations</h2>
-          <Button onClick={() => setShowCreateOrg(true)} className="button-primary">
+          <Button onClick={() => setShowCreateOrg(true)} className="bg-primary hover:bg-primary/90">
             <Plus className="w-4 h-4 mr-2" />
             Create Organization
           </Button>
@@ -214,7 +214,7 @@ export default function OrganizationSpace() {
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button type="button" className="button-primary flex-1">
+                    <Button type="button" className="bg-primary hover:bg-primary/90 flex-1">
                       Create Organization
                     </Button>
                   </AlertDialogTrigger>
@@ -230,7 +230,7 @@ export default function OrganizationSpace() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleCreateOrg} className="button-primary">
+                      <AlertDialogAction onClick={handleCreateOrg} className="bg-primary hover:bg-primary/90">
                         Create Organization
                       </AlertDialogAction>
                     </AlertDialogFooter>
@@ -271,7 +271,7 @@ export default function OrganizationSpace() {
         <Card className="glass-card">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-2xl">Teams</CardTitle>
-            <Button onClick={() => setShowAddTeam(true)} className="button-primary">
+            <Button onClick={() => setShowAddTeam(true)} className="bg-primary hover:bg-primary/90">
               <Plus className="h-4 w-4 mr-2" />
               Add Team
             </Button>
@@ -325,7 +325,7 @@ export default function OrganizationSpace() {
                   <Filter className="h-4 w-4 mr-2" />
                   Filter
                 </Button>
-                <Button onClick={() => setShowAddMember(true)} className="button-primary">
+                <Button onClick={() => setShowAddMember(true)} className="bg-primary hover:bg-primary/90">
                   <Plus className="h-4 w-4 mr-2" />
                   Add Member
                 </Button>
@@ -396,7 +396,7 @@ export default function OrganizationSpace() {
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction variant="destructive">
+                            <AlertDialogAction className="bg-destructive hover:bg-destructive/90">
                               Remove Member
                             </AlertDialogAction>
                           </AlertDialogFooter>
@@ -449,7 +449,7 @@ export default function OrganizationSpace() {
               <Button type="button" variant="outline" onClick={() => setShowAddTeam(false)} className="flex-1">
                 Cancel
               </Button>
-              <Button type="submit" className="button-primary flex-1">
+              <Button type="submit" className="bg-primary hover:bg-primary/90 flex-1">
                 Create Team
               </Button>
             </div>
@@ -556,7 +556,7 @@ export default function OrganizationSpace() {
               <Button type="button" variant="outline" onClick={() => setShowAddMember(false)} className="flex-1">
                 Cancel
               </Button>
-              <Button type="submit" className="button-primary flex-1">
+              <Button type="submit" className="bg-primary hover:bg-primary/90 flex-1">
                 Add Member
               </Button>
             </div>
