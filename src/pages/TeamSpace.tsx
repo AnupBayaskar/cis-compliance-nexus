@@ -1,149 +1,302 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Users, Plus, UserPlus, Crown, Shield, CheckCircle, User } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Users, Plus, Edit2, Trash2, Crown, Shield, CheckCircle, User, Mail, Phone, Calendar } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
-// Mock data - in real app this would come from API
+// Mock data
 const mockTeams = [
   {
-    _id: '1',
+    id: '1',
     name: 'Security Team',
+    description: 'Responsible for cybersecurity compliance and monitoring',
+    leadId: '3',
+    leadName: 'Alice Johnson',
+    leadEmail: 'alice.johnson@company.com',
     members: [
-      { _id: '1', name: 'John Doe', email: 'john@example.com', role: 'team-lead', avatar: '', joinedAt: '2024-01-15', teamId: '1' },
-      { _id: '2', name: 'Jane Smith', email: 'jane@example.com', role: 'validator', avatar: '', joinedAt: '2024-02-01', teamId: '1' },
-      { _id: '3', name: 'Bob Wilson', email: 'bob@example.com', role: 'member', avatar: '', joinedAt: '2024-02-15', teamId: '1' }
-    ]
+      { id: '1', name: 'John Doe', email: 'john.doe@company.com', role: 'member', phone: '+1-555-0123', joinedAt: '2024-01-15' },
+      { id: '2', name: 'Jane Smith', email: 'jane.smith@company.com', role: 'validator', phone: '+1-555-0124', joinedAt: '2024-01-10' },
+      { id: '3', name: 'Alice Johnson', email: 'alice.johnson@company.com', role: 'team-lead', phone: '+1-555-0125', joinedAt: '2024-01-01' }
+    ],
+    createdAt: '2024-01-01',
+    stats: {
+      totalMembers: 3,
+      activeConfigurations: 12,
+      pendingValidations: 4,
+      complianceRate: 87
+    }
   },
   {
-    _id: '2',
+    id: '2',
     name: 'IT Operations',
+    description: 'Infrastructure management and system administration',
+    leadId: '4',
+    leadName: 'Bob Wilson',
+    leadEmail: 'bob.wilson@company.com',
     members: [
-      { _id: '4', name: 'Alice Johnson', email: 'alice@example.com', role: 'team-lead', avatar: '', joinedAt: '2024-01-20', teamId: '2' },
-      { _id: '5', name: 'Charlie Brown', email: 'charlie@example.com', role: 'member', avatar: '', joinedAt: '2024-03-01', teamId: '2' }
-    ]
+      { id: '4', name: 'Bob Wilson', email: 'bob.wilson@company.com', role: 'team-lead', phone: '+1-555-0126', joinedAt: '2024-01-01' },
+      { id: '5', name: 'Carol Davis', email: 'carol.davis@company.com', role: 'member', phone: '+1-555-0127', joinedAt: '2024-01-12' }
+    ],
+    createdAt: '2024-01-01',
+    stats: {
+      totalMembers: 2,
+      activeConfigurations: 8,
+      pendingValidations: 2,
+      complianceRate: 92
+    }
   }
 ];
 
-const roleConfig = {
-  'organization-lead': { label: 'Organization Leader', icon: Crown, color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' },
-  'team-lead': { label: 'Team Leader', icon: Shield, color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' },
-  'validator': { label: 'Validator', icon: CheckCircle, color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' },
-  'member': { label: 'Member', icon: User, color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300' }
+const getRoleIcon = (role) => {
+  switch (role) {
+    case 'organization-lead': return Crown;
+    case 'team-lead': return Shield;
+    case 'validator': return CheckCircle;
+    default: return User;
+  }
+};
+
+const getRoleColor = (role) => {
+  switch (role) {
+    case 'organization-lead': return 'bg-primary text-primary-foreground';
+    case 'team-lead': return 'bg-primary/20 text-primary';
+    case 'validator': return 'bg-green-500/20 text-green-700';
+    default: return 'bg-gray-500/20 text-gray-700';
+  }
 };
 
 export default function TeamSpace() {
-  const [teams, setTeams] = useState(mockTeams);
-  const [loading, setLoading] = useState(false);
-  const [selectedMember, setSelectedMember] = useState(null);
-  const [showAddMember, setShowAddMember] = useState(false);
-  const [newMember, setNewMember] = useState({ name: '', email: '', role: '', teamId: '' });
   const { user } = useAuth();
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [showTeamDialog, setShowTeamDialog] = useState(false);
+  const [showMemberDialog, setShowMemberDialog] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [newTeamName, setNewTeamName] = useState('');
+  const [newTeamDescription, setNewTeamDescription] = useState('');
+  const [newMemberEmail, setNewMemberEmail] = useState('');
 
-  const handleAddMember = (e) => {
-    e.preventDefault();
-    console.log('Adding new member:', newMember);
-    // Mock implementation
-    setShowAddMember(false);
-    setNewMember({ name: '', email: '', role: '', teamId: '' });
+  const canManageTeams = user?.role === 'organization-lead' || user?.role === 'team-lead';
+
+  const handleCreateTeam = () => {
+    console.log('Creating team:', { name: newTeamName, description: newTeamDescription });
+    setNewTeamName('');
+    setNewTeamDescription('');
+    setShowTeamDialog(false);
   };
 
-  if (loading) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="space-y-6">
-          <div className="h-8 bg-muted rounded animate-pulse" />
-          <div className="grid gap-6">
-            {[...Array(3)].map((_, i) => (
-              <Card key={i} className="p-6">
-                <div className="space-y-4">
-                  <div className="h-6 bg-muted rounded animate-pulse" />
-                  <div className="flex gap-4">
-                    {[...Array(4)].map((_, j) => (
-                      <div key={j} className="w-16 h-20 bg-muted rounded animate-pulse" />
-                    ))}
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const handleEditTeam = (team) => {
+    setSelectedTeam(team);
+    setNewTeamName(team.name);
+    setNewTeamDescription(team.description);
+    setIsEditing(true);
+    setShowTeamDialog(true);
+  };
+
+  const handleDeleteTeam = (teamId) => {
+    console.log('Deleting team:', teamId);
+  };
+
+  const handleAddMember = () => {
+    console.log('Adding member:', newMemberEmail, 'to team:', selectedTeam?.id);
+    setNewMemberEmail('');
+    setShowMemberDialog(false);
+  };
+
+  const handleRemoveMember = (memberId) => {
+    console.log('Removing member:', memberId, 'from team:', selectedTeam?.id);
+  };
 
   return (
     <div className="container mx-auto p-6">
-      <div className="flex items-center space-x-4 mb-8">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-          <Users className="w-6 h-6 text-white" />
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center space-x-4">
+          <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
+            <Users className="w-6 h-6 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">Team Space</h1>
+            <p className="text-muted-foreground">Manage teams and team members</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-3xl font-bold">Team Management</h1>
-          <p className="text-muted-foreground">Manage your organization's teams and members</p>
-        </div>
+        {canManageTeams && (
+          <Button onClick={() => {
+            setIsEditing(false);
+            setNewTeamName('');
+            setNewTeamDescription('');
+            setShowTeamDialog(true);
+          }}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Team
+          </Button>
+        )}
       </div>
 
-      <div className="space-y-6">
-        {teams.map((team) => (
-          <Card key={team._id} className="border hover:shadow-lg transition-all duration-300">
+      {/* Teams Grid */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {mockTeams.map((team) => (
+          <Card key={team.id} className="glass-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                  <Users className="h-5 w-5 text-blue-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold">{team.name}</h3>
-                  <p className="text-sm text-muted-foreground">{team.members.length} members</p>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-4">
-                {team.members.map((member) => (
-                  <div
-                    key={member._id}
-                    className="flex flex-col items-center p-4 rounded-xl border border-border hover:bg-accent/50 transition-all duration-200 cursor-pointer min-w-[140px]"
-                    onClick={() => setSelectedMember(member)}
-                  >
-                    <Avatar className="h-12 w-12 mb-3">
-                      <AvatarImage src={member.avatar} alt={member.name} />
-                      <AvatarFallback className="bg-blue-100 dark:bg-blue-900/30 text-blue-600">
-                        {member.name.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <p className="font-medium text-sm text-center mb-2">{member.name}</p>
-                    <Badge className={cn("text-xs mb-2", roleConfig[member.role]?.color || roleConfig.member.color)}>
-                      {roleConfig[member.role]?.label || 'Member'}
-                    </Badge>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  {team.name}
+                </CardTitle>
+                {canManageTeams && (
+                  <div className="flex gap-2">
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-xs h-7 text-blue-600 hover:bg-blue-50"
+                      onClick={() => handleEditTeam(team)}
                     >
-                      View Details
+                      <Edit2 className="h-4 w-4" />
                     </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Team</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete "{team.name}"? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDeleteTeam(team.id)}>
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
-                ))}
+                )}
+              </div>
+              <p className="text-muted-foreground">{team.description}</p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Team Lead */}
+              <div>
+                <h4 className="font-medium mb-2 flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-primary" />
+                  Team Lead
+                </h4>
+                <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                      {team.leadName.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium text-sm">{team.leadName}</p>
+                    <p className="text-xs text-muted-foreground">{team.leadEmail}</p>
+                  </div>
+                </div>
+              </div>
 
-                <div
-                  className="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed border-blue-300 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 cursor-pointer min-w-[140px] min-h-[160px]"
-                  onClick={() => {
-                    setNewMember({ ...newMember, teamId: team._id });
-                    setShowAddMember(true);
-                  }}
-                >
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
-                    <Plus className="h-6 w-6 text-blue-600" />
+              {/* Team Stats */}
+              <div>
+                <h4 className="font-medium mb-3">Team Statistics</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="text-center p-3 bg-muted/50 rounded-lg">
+                    <div className="text-2xl font-bold text-primary">{team.stats.totalMembers}</div>
+                    <p className="text-xs text-muted-foreground">Members</p>
                   </div>
-                  <p className="text-sm font-medium text-blue-600">Add Member</p>
+                  <div className="text-center p-3 bg-muted/50 rounded-lg">
+                    <div className="text-2xl font-bold text-primary">{team.stats.complianceRate}%</div>
+                    <p className="text-xs text-muted-foreground">Compliance</p>
+                  </div>
+                  <div className="text-center p-3 bg-muted/50 rounded-lg">
+                    <div className="text-2xl font-bold text-primary">{team.stats.activeConfigurations}</div>
+                    <p className="text-xs text-muted-foreground">Configs</p>
+                  </div>
+                  <div className="text-center p-3 bg-muted/50 rounded-lg">
+                    <div className="text-2xl font-bold text-primary">{team.stats.pendingValidations}</div>
+                    <p className="text-xs text-muted-foreground">Pending</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Team Members */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium">Team Members ({team.members.length})</h4>
+                  {canManageTeams && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedTeam(team);
+                        setShowMemberDialog(true);
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add
+                    </Button>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {team.members.slice(0, 3).map((member) => {
+                    const RoleIcon = getRoleIcon(member.role);
+                    return (
+                      <div key={member.id} className="flex items-center justify-between p-2 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback className="bg-muted text-muted-foreground text-sm">
+                              {member.name.split(' ').map(n => n[0]).join('')}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium text-sm">{member.name}</p>
+                            <div className="flex items-center gap-2">
+                              <Badge className={cn("text-xs", getRoleColor(member.role))}>
+                                <RoleIcon className="h-3 w-3 mr-1" />
+                                {member.role.replace('-', ' ')}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                        {canManageTeams && member.role !== 'team-lead' && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Remove Member</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to remove {member.name} from {team.name}?
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleRemoveMember(member.id)}>
+                                  Remove
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {team.members.length > 3 && (
+                    <Button variant="ghost" size="sm" className="w-full">
+                      View All Members ({team.members.length})
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -151,97 +304,70 @@ export default function TeamSpace() {
         ))}
       </div>
 
-      {/* Add Member Dialog */}
-      <Dialog open={showAddMember} onOpenChange={setShowAddMember}>
-        <DialogContent className="sm:max-w-md">
+      {/* Create/Edit Team Dialog */}
+      <Dialog open={showTeamDialog} onOpenChange={setShowTeamDialog}>
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Team Member</DialogTitle>
+            <DialogTitle>{isEditing ? 'Edit Team' : 'Create New Team'}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleAddMember} className="space-y-4">
-            <Input
-              placeholder="Full Name"
-              value={newMember.name}
-              onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
-              required
-            />
-            <Input
-              type="email"
-              placeholder="Email Address"
-              value={newMember.email}
-              onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
-              required
-            />
-            <Select
-              value={newMember.role}
-              onValueChange={(value) => setNewMember({ ...newMember, role: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="member">Member</SelectItem>
-                <SelectItem value="validator">Validator</SelectItem>
-                <SelectItem value="team-lead">Team Lead</SelectItem>
-              </SelectContent>
-            </Select>
-            <div className="flex gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={() => setShowAddMember(false)} className="flex-1">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Team Name</label>
+              <Input
+                value={newTeamName}
+                onChange={(e) => setNewTeamName(e.target.value)}
+                placeholder="Enter team name"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Description</label>
+              <Textarea
+                value={newTeamDescription}
+                onChange={(e) => setNewTeamDescription(e.target.value)}
+                placeholder="Enter team description"
+                rows={3}
+              />
+            </div>
+            <div className="flex gap-2 pt-4">
+              <Button variant="outline" onClick={() => setShowTeamDialog(false)} className="flex-1">
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1">
-                Add Member
+              <Button onClick={handleCreateTeam} className="flex-1">
+                {isEditing ? 'Update Team' : 'Create Team'}
               </Button>
             </div>
-          </form>
+          </div>
         </DialogContent>
       </Dialog>
 
-      {/* Member Details Dialog */}
-      <Dialog open={!!selectedMember} onOpenChange={() => setSelectedMember(null)}>
-        <DialogContent className="sm:max-w-lg">
+      {/* Add Member Dialog */}
+      <Dialog open={showMemberDialog} onOpenChange={setShowMemberDialog}>
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Member Details</DialogTitle>
+            <DialogTitle>Add Team Member</DialogTitle>
           </DialogHeader>
-          {selectedMember && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={selectedMember.avatar} alt={selectedMember.name} />
-                  <AvatarFallback className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 text-lg">
-                    {selectedMember.name.split(' ').map(n => n[0]).join('')}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h3 className="text-lg font-semibold">{selectedMember.name}</h3>
-                  <p className="text-muted-foreground">{selectedMember.email}</p>
-                  <Badge className={cn("mt-2", roleConfig[selectedMember.role]?.color || roleConfig.member.color)}>
-                    {roleConfig[selectedMember.role]?.label || 'Member'}
-                  </Badge>
-                </div>
-              </div>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="font-medium">Joined:</span>
-                  <span>{new Date(selectedMember.joinedAt).toLocaleDateString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium">Team ID:</span>
-                  <span className="font-mono text-xs">{selectedMember.teamId}</span>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1">
-                  Reassign Team
-                </Button>
-                <Button variant="outline" className="flex-1">
-                  Change Role
-                </Button>
-                <Button variant="destructive" className="flex-1">
-                  Remove
-                </Button>
-              </div>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Member Email</label>
+              <Input
+                value={newMemberEmail}
+                onChange={(e) => setNewMemberEmail(e.target.value)}
+                placeholder="Enter member email address"
+                type="email"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                The user must already be registered in the system
+              </p>
             </div>
-          )}
+            <div className="flex gap-2 pt-4">
+              <Button variant="outline" onClick={() => setShowMemberDialog(false)} className="flex-1">
+                Cancel
+              </Button>
+              <Button onClick={handleAddMember} className="flex-1">
+                Add Member
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
