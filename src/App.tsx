@@ -30,9 +30,7 @@ const App = () => (
           <div className="min-h-screen flex w-full">
             <AppSidebar />
             <div className="flex-1 flex flex-col ml-20">
-              <div className="relative z-50">
-                <Navbar />
-              </div>
+              <Navbar />
               <main className="flex-1 overflow-auto">
                 <Routes>
                   <Route path="/" element={<Home />} />

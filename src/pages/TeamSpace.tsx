@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Users, Plus, UserPlus, Crown, Shield, CheckCircle, User, LogIn } from 'lucide-react';
+import { Users, Plus, UserPlus, Crown, Shield, CheckCircle, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
@@ -34,7 +34,7 @@ const mockTeams = [
 
 const roleConfig = {
   'organization-lead': { label: 'Organization Leader', icon: Crown, color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' },
-  'team-lead': { label: 'Team Leader', icon: Shield, color: 'bg-primary/20 text-primary' },
+  'team-lead': { label: 'Team Leader', icon: Shield, color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' },
   'validator': { label: 'Validator', icon: CheckCircle, color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' },
   'member': { label: 'Member', icon: User, color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300' }
 };
@@ -45,7 +45,7 @@ export default function TeamSpace() {
   const [selectedMember, setSelectedMember] = useState(null);
   const [showAddMember, setShowAddMember] = useState(false);
   const [newMember, setNewMember] = useState({ name: '', email: '', role: '', teamId: '' });
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
 
   const handleAddMember = (e) => {
     e.preventDefault();
@@ -54,29 +54,6 @@ export default function TeamSpace() {
     setShowAddMember(false);
     setNewMember({ name: '', email: '', role: '', teamId: '' });
   };
-
-  // Show login prompt for non-authenticated users
-  if (!isAuthenticated) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6">
-          <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center">
-            <LogIn className="w-8 h-8 text-primary" />
-          </div>
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl font-bold">Authentication Required</h2>
-            <p className="text-muted-foreground max-w-md">
-              Please log in to view team details and manage team members. This section contains sensitive organizational information.
-            </p>
-          </div>
-          <Button size="lg" className="bg-primary hover:bg-primary/90">
-            <LogIn className="mr-2 h-5 w-5" />
-            Login to Continue
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   if (loading) {
     return (
@@ -105,8 +82,8 @@ export default function TeamSpace() {
   return (
     <div className="container mx-auto p-6">
       <div className="flex items-center space-x-4 mb-8">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-          <Users className="w-6 h-6 text-primary-foreground" />
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+          <Users className="w-6 h-6 text-white" />
         </div>
         <div>
           <h1 className="text-3xl font-bold">Team Management</h1>
@@ -119,8 +96,8 @@ export default function TeamSpace() {
           <Card key={team._id} className="border hover:shadow-lg transition-all duration-300">
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <Users className="h-5 w-5 text-primary" />
+                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                  <Users className="h-5 w-5 text-blue-600" />
                 </div>
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold">{team.name}</h3>
@@ -138,7 +115,7 @@ export default function TeamSpace() {
                   >
                     <Avatar className="h-12 w-12 mb-3">
                       <AvatarImage src={member.avatar} alt={member.name} />
-                      <AvatarFallback className="bg-primary/10 text-primary">
+                      <AvatarFallback className="bg-blue-100 dark:bg-blue-900/30 text-blue-600">
                         {member.name.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
@@ -149,7 +126,7 @@ export default function TeamSpace() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-xs h-7 text-primary hover:bg-primary/10"
+                      className="text-xs h-7 text-blue-600 hover:bg-blue-50"
                     >
                       View Details
                     </Button>
@@ -157,16 +134,16 @@ export default function TeamSpace() {
                 ))}
 
                 <div
-                  className="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed border-primary/30 hover:border-primary hover:bg-primary/5 transition-all duration-200 cursor-pointer min-w-[140px] min-h-[160px]"
+                  className="flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed border-blue-300 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 cursor-pointer min-w-[140px] min-h-[160px]"
                   onClick={() => {
                     setNewMember({ ...newMember, teamId: team._id });
                     setShowAddMember(true);
                   }}
                 >
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-3">
-                    <Plus className="h-6 w-6 text-primary" />
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3">
+                    <Plus className="h-6 w-6 text-blue-600" />
                   </div>
-                  <p className="text-sm font-medium text-primary">Add Member</p>
+                  <p className="text-sm font-medium text-blue-600">Add Member</p>
                 </div>
               </div>
             </CardContent>
@@ -230,7 +207,7 @@ export default function TeamSpace() {
               <div className="flex items-center gap-4">
                 <Avatar className="h-16 w-16">
                   <AvatarImage src={selectedMember.avatar} alt={selectedMember.name} />
-                  <AvatarFallback className="bg-primary/10 text-primary text-lg">
+                  <AvatarFallback className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 text-lg">
                     {selectedMember.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>

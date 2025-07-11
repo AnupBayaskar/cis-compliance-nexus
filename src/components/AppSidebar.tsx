@@ -31,7 +31,6 @@ export function AppSidebar() {
   const { user } = useAuth();
   const location = useLocation();
   const [isDark, setIsDark] = React.useState(false);
-  const [isExpanded, setIsExpanded] = React.useState(false);
 
   const toggleTheme = () => {
     setIsDark(!isDark);
@@ -47,25 +46,11 @@ export function AppSidebar() {
   const isActivePath = (path: string) => location.pathname === path;
 
   return (
-    <aside 
-      className={cn(
-        "fixed top-0 left-0 h-full bg-card border-r border-border flex flex-col transition-all duration-300 ease-in-out",
-        "z-40", // Lower z-index than navbar
-        isExpanded ? "w-60" : "w-20"
-      )}
-      onMouseEnter={() => setIsExpanded(true)}
-      onMouseLeave={() => setIsExpanded(false)}
-    >
+    <aside className="fixed top-0 left-0 h-full w-20 bg-card border-r border-border z-50 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-center p-4 border-b border-border">
         <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
           <Shield className="w-6 h-6 text-primary-foreground" />
-        </div>
-        <div className={cn(
-          "ml-3 transition-all duration-300 ease-in-out overflow-hidden",
-          isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0"
-        )}>
-          <span className="font-semibold text-lg whitespace-nowrap">CIS Compliance</span>
         </div>
       </div>
 
@@ -78,27 +63,18 @@ export function AppSidebar() {
               key={item.href}
               to={item.href}
               className={cn(
-                "flex items-center rounded-xl transition-all duration-300 ease-in-out group relative",
-                isExpanded ? "w-full h-12 px-3" : "w-12 h-12 justify-center",
+                "flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-200 group relative",
                 isActivePath(item.href)
                   ? "bg-primary text-primary-foreground shadow-lg"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
             >
-              <Icon className="w-5 h-5 flex-shrink-0" />
+              <Icon className="w-5 h-5" />
               
-              <div className={cn(
-                "ml-3 transition-all duration-300 ease-in-out overflow-hidden",
-                isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0"
-              )}>
-                <span className="whitespace-nowrap">{item.name}</span>
+              {/* Tooltip */}
+              <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                {item.name}
               </div>
-              
-              {!isExpanded && (
-                <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                  {item.name}
-                </div>
-              )}
             </NavLink>
           );
         })}
@@ -108,25 +84,13 @@ export function AppSidebar() {
       <div className="p-4 border-t border-border">
         <button
           onClick={toggleTheme}
-          className={cn(
-            "flex items-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-300 ease-in-out group relative",
-            isExpanded ? "w-full h-12 px-3" : "w-12 h-12 justify-center"
-          )}
+          className="flex items-center justify-center w-12 h-12 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200 group relative"
         >
-          {isDark ? <Sun className="w-5 h-5 flex-shrink-0" /> : <Moon className="w-5 h-5 flex-shrink-0" />}
+          {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           
-          <div className={cn(
-            "ml-3 transition-all duration-300 ease-in-out overflow-hidden",
-            isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0"
-          )}>
-            <span className="whitespace-nowrap">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+          <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+            {isDark ? 'Light Mode' : 'Dark Mode'}
           </div>
-          
-          {!isExpanded && (
-            <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-              {isDark ? 'Light Mode' : 'Dark Mode'}
-            </div>
-          )}
         </button>
       </div>
 
@@ -136,25 +100,13 @@ export function AppSidebar() {
           href="https://smartedge.in"
           target="_blank"
           rel="noopener noreferrer"
-          className={cn(
-            "flex items-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-300 ease-in-out group relative",
-            isExpanded ? "w-full h-12 px-3" : "w-12 h-12 justify-center"
-          )}
+          className="flex items-center justify-center w-12 h-12 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200 group relative"
         >
-          <ExternalLink className="w-5 h-5 flex-shrink-0" />
+          <ExternalLink className="w-5 h-5" />
           
-          <div className={cn(
-            "ml-3 transition-all duration-300 ease-in-out overflow-hidden",
-            isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0"
-          )}>
-            <span className="whitespace-nowrap">SmartEdge.in</span>
+          <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+            SmartEdge.in
           </div>
-          
-          {!isExpanded && (
-            <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-              SmartEdge.in
-            </div>
-          )}
         </a>
       </div>
     </aside>
