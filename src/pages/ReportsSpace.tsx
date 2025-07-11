@@ -1,13 +1,17 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Download, Eye, Calendar, User, CheckCircle, BarChart3, TrendingUp, Shield } from 'lucide-react';
+import { FileText, Download, Eye, Calendar, User, CheckCircle, BarChart3, Monitor, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface Team {
   _id: string;
@@ -38,7 +42,10 @@ export default function ReportsSpace() {
   const [selectedDevice, setSelectedDevice] = useState<string>('');
   const [savedConfigs, setSavedConfigs] = useState<SavedConfiguration[]>([]);
   const [selectedConfig, setSelectedConfig] = useState<SavedConfiguration | null>(null);
-  const [showGenerateDialog, setShowGenerateDialog] = useState<SavedConfiguration | null>(null);
+  const [showViewDetails, setShowViewDetails] = useState(false);
+  const [showGenerateDialog, setShowGenerateDialog] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('date');
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -76,7 +83,7 @@ export default function ReportsSpace() {
   const handleDeviceSelect = async (deviceId: string) => {
     console.log('Device selected for reports:', deviceId);
     setSelectedDevice(deviceId);
-    // Mock saved configurations
+    // Mock saved configurations - only validated ones
     setSavedConfigs([
       {
         _id: 'config1',
@@ -97,16 +104,6 @@ export default function ReportsSpace() {
         validatedBy: 'Alice Brown',
         markedBy: 'John Smith',
         status: 'validated'
-      },
-      {
-        _id: 'config3',
-        name: 'Access Control Configuration',
-        deviceId,
-        teamId: '1',
-        createdAt: '2024-01-18T09:15:00Z',
-        validatedBy: 'Bob Wilson',
-        markedBy: 'Mike Davis',
-        status: 'denied'
       }
     ]);
   };
@@ -114,7 +111,7 @@ export default function ReportsSpace() {
   const handleGenerateReport = async (configId: string) => {
     try {
       console.log('Generating report for configuration:', configId);
-      setShowGenerateDialog(null);
+      setShowGenerateDialog(false);
       toast({
         title: "Report Generated Successfully",
         description: "Your compliance report has been generated and will be downloaded shortly.",
@@ -148,11 +145,17 @@ export default function ReportsSpace() {
     return acc;
   }, {} as Record<string, Device[]>);
 
+  const filteredConfigs = savedConfigs.filter(config =>
+    config.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    config.validatedBy.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    config.markedBy.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-brand-gray-light via-background to-brand-secondary/5">
-        <div className="section-padding">
-          <div className="content-max-width space-y-6">
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto p-6">
+          <div className="space-y-6">
             <div className="h-12 bg-muted rounded-lg animate-pulse" />
             <div className="grid lg:grid-cols-3 gap-6">
               <div className="h-96 bg-muted rounded-lg animate-pulse" />
@@ -165,77 +168,52 @@ export default function ReportsSpace() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-gray-light via-background to-brand-secondary/5">
-      <div className="section-padding">
-        <div className="content-max-width space-y-8">
-          {/* Hero Section */}
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto p-6">
+        <div className="space-y-8">
+          {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center space-y-6"
           >
             <div className="flex justify-center mb-6">
-              <div className="w-20 h-20 bg-gradient-to-br from-brand-secondary to-brand-primary rounded-2xl flex items-center justify-center shadow-2xl">
-                <BarChart3 className="w-10 h-10 text-white" />
+              <div className="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center shadow-2xl">
+                <BarChart3 className="w-10 h-10 text-primary-foreground" />
               </div>
             </div>
             
             <div className="space-y-4">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-gradient-secondary heading-enhanced">
+              <h1 className="text-4xl sm:text-5xl font-bold text-foreground">
                 Reports Space
               </h1>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto typography-enhanced">
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
                 Generate comprehensive compliance reports and track your security posture
               </p>
             </div>
           </motion.div>
 
-          {/* Stats Cards */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6"
-          >
-            <div className="glass-card p-6 text-center hover-lift">
-              <TrendingUp className="w-8 h-8 text-brand-success mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-brand-success mb-2">156</h3>
-              <p className="text-muted-foreground">Reports Generated</p>
-            </div>
-            
-            <div className="glass-card p-6 text-center hover-lift">
-              <Shield className="w-8 h-8 text-brand-primary mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-brand-primary mb-2">98.2%</h3>
-              <p className="text-muted-foreground">Compliance Score</p>
-            </div>
-            
-            <div className="glass-card p-6 text-center hover-lift">
-              <CheckCircle className="w-8 h-8 text-brand-secondary mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-brand-secondary mb-2">24</h3>
-              <p className="text-muted-foreground">Active Configurations</p>
-            </div>
-          </motion.div>
-
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Left Panel - Device Selection */}
+            {/* Left Panel - Team and Device Selection */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <Card className="glass-card border-0 shadow-2xl">
+              <Card className="glass-card">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-brand-primary/10 rounded-xl flex items-center justify-center">
-                      <FileText className="h-5 w-5 text-brand-primary" />
+                    <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                      <FileText className="h-5 w-5 text-primary" />
                     </div>
-                    <span className="font-display">Your Teams</span>
+                    <span>Your Teams</span>
                   </CardTitle>
+                  <p className="text-sm text-muted-foreground">Select a Device</p>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {Object.entries(devicesByTeam).map(([teamName, teamDevices]) => (
                     <div key={teamName} className="space-y-3">
-                      <h4 className="font-semibold text-brand-primary border-b border-brand-primary/20 pb-2">
+                      <h4 className="font-semibold text-primary border-b border-primary/20 pb-2">
                         {teamName}
                       </h4>
                       <div className="space-y-2">
@@ -244,11 +222,12 @@ export default function ReportsSpace() {
                             key={device._id}
                             variant={selectedDevice === device._id ? "default" : "ghost"}
                             size="sm"
-                            className={`w-full justify-start text-left h-auto p-3 ${
+                            className={cn(
+                              "w-full justify-start text-left h-auto p-3",
                               selectedDevice === device._id
-                                ? 'button-primary'
-                                : 'hover:bg-muted/80 hover:shadow-md'
-                            }`}
+                                ? 'bg-primary text-primary-foreground'
+                                : 'hover:bg-muted'
+                            )}
                             onClick={() => handleDeviceSelect(device._id)}
                           >
                             <div className="flex flex-col items-start space-y-1">
@@ -264,84 +243,130 @@ export default function ReportsSpace() {
               </Card>
             </motion.div>
 
-            {/* Right Panel - Saved Configurations */}
+            {/* Right Panel - Device Details and Configurations */}
             <div className="lg:col-span-2">
               {selectedDevice ? (
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 }}
+                  className="space-y-6"
                 >
-                  <Card className="glass-card border-0 shadow-2xl">
+                  {/* Device Details */}
+                  <Card className="glass-card">
                     <CardHeader>
                       <div className="flex items-center justify-between">
-                        <CardTitle className="font-display">Saved Configurations</CardTitle>
-                        <Button className="button-secondary">
-                          View All Configurations
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center">
+                            <Monitor className="h-6 w-6 text-secondary" />
+                          </div>
+                          <div>
+                            <CardTitle>{getDeviceName(selectedDevice)}</CardTitle>
+                            <p className="text-sm text-muted-foreground">
+                              {devices.find(d => d._id === selectedDevice)?.type}
+                            </p>
+                          </div>
+                        </div>
+                        <Button className="button-primary">
+                          View Saved Configurations
                         </Button>
                       </div>
-                      <p className="text-sm text-muted-foreground typography-enhanced">
-                        Device: <span className="font-semibold text-brand-primary">{getDeviceName(selectedDevice)}</span>
-                      </p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-sm text-muted-foreground">
+                        Team: {getTeamName(devices.find(d => d._id === selectedDevice)?.teamId || '')}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Saved Configurations */}
+                  <Card className="glass-card">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle>Saved Configurations</CardTitle>
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Search configurations..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-48"
+                          />
+                          <Select value={sortBy} onValueChange={setSortBy}>
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="date">Date</SelectItem>
+                              <SelectItem value="name">Name</SelectItem>
+                              <SelectItem value="validator">Validator</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
                     </CardHeader>
                     <CardContent>
                       <ScrollArea className="h-96">
-                        <div className="space-y-4">
-                          {savedConfigs.map((config, index) => (
-                            <motion.div
+                        <div className="space-y-3">
+                          {filteredConfigs.map((config) => (
+                            <div
                               key={config._id}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: index * 0.1 }}
-                              className="p-6 rounded-xl border border-border/50 hover:shadow-lg transition-all duration-300 hover:scale-[1.01] bg-card/50"
+                              className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
                             >
-                              <div className="flex items-start justify-between mb-4">
-                                <h4 className="font-semibold font-display text-lg">{config.name}</h4>
-                                <Badge
-                                  variant={config.status === 'validated' ? 'default' : config.status === 'denied' ? 'destructive' : 'secondary'}
-                                  className={`${
-                                    config.status === 'validated' 
-                                      ? 'bg-brand-success/10 text-brand-success border-brand-success/20' 
-                                      : config.status === 'denied'
-                                      ? 'bg-brand-danger/10 text-brand-danger border-brand-danger/20'
-                                      : 'bg-brand-warning/10 text-brand-warning border-brand-warning/20'
-                                  }`}
-                                >
-                                  {config.status}
-                                </Badge>
+                              <div className="flex-1 grid grid-cols-4 gap-4 items-center text-sm">
+                                <span className="font-medium">{config.name}</span>
+                                <span className="text-muted-foreground">
+                                  {new Date(config.createdAt).toLocaleDateString()}
+                                </span>
+                                <span className="text-muted-foreground">
+                                  Validated by: {config.validatedBy}
+                                </span>
+                                <span className="text-muted-foreground">
+                                  Marked by: {config.markedBy}
+                                </span>
                               </div>
-                              
-                              <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground mb-4">
-                                <div className="flex items-center gap-2">
-                                  <Calendar className="h-4 w-4" />
-                                  <span>{new Date(config.createdAt).toLocaleDateString()}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <User className="h-4 w-4" />
-                                  <span>By {config.validatedBy}</span>
-                                </div>
-                              </div>
-                              
-                              <div className="flex gap-3">
+                              <div className="flex gap-2">
                                 <Button
-                                  variant="outline"
                                   size="sm"
-                                  onClick={() => setSelectedConfig(config)}
-                                  className="hover:shadow-md"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSelectedConfig(config);
+                                    setShowViewDetails(true);
+                                  }}
                                 >
-                                  <Eye className="mr-2 h-4 w-4" />
+                                  <Eye className="h-4 w-4 mr-2" />
                                   View Details
                                 </Button>
-                                <Button
-                                  size="sm"
-                                  className="button-primary"
-                                  onClick={() => setShowGenerateDialog(config)}
-                                >
-                                  <Download className="mr-2 h-4 w-4" />
-                                  Generate Report
-                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button size="sm" className="button-primary">
+                                      <Download className="h-4 w-4 mr-2" />
+                                      Generate Report
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <AlertCircle className="w-6 h-6 text-primary" />
+                                      </div>
+                                      <AlertDialogTitle>Generate Compliance Report</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Are you sure you want to generate a GRC compliance report for "{config.name}"? 
+                                        This will create a downloadable PDF document.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction 
+                                        onClick={() => handleGenerateReport(config._id)}
+                                        className="bg-primary hover:bg-primary/90"
+                                      >
+                                        Generate Report
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
                               </div>
-                            </motion.div>
+                            </div>
                           ))}
                         </div>
                       </ScrollArea>
@@ -349,144 +374,105 @@ export default function ReportsSpace() {
                   </Card>
                 </motion.div>
               ) : (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="h-full flex items-center justify-center"
-                >
-                  <Card className="glass-card border-0 shadow-2xl w-full">
-                    <CardContent className="flex flex-col items-center justify-center h-96 text-center space-y-6">
-                      <div className="w-24 h-24 bg-brand-primary/10 rounded-2xl flex items-center justify-center">
-                        <FileText className="h-12 w-12 text-brand-primary" />
-                      </div>
-                      <div className="space-y-2">
-                        <h3 className="text-xl font-display font-semibold">Select a Device</h3>
-                        <p className="text-muted-foreground typography-enhanced max-w-md">
-                          Choose a device from your teams to view saved configurations and generate comprehensive compliance reports
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                <Card className="glass-card h-96 flex items-center justify-center">
+                  <div className="text-center space-y-4">
+                    <Monitor className="h-16 w-16 text-muted-foreground mx-auto" />
+                    <div>
+                      <h3 className="text-lg font-semibold">No Device Selected</h3>
+                      <p className="text-muted-foreground">Select a device from your teams to view saved configurations</p>
+                    </div>
+                  </div>
+                </Card>
               )}
             </div>
           </div>
-
-          {/* Configuration Details Dialog */}
-          <Dialog open={!!selectedConfig} onOpenChange={() => setSelectedConfig(null)}>
-            <DialogContent className="confirmation-dialog max-w-4xl">
-              <DialogHeader>
-                <DialogTitle className="font-display text-xl">Configuration Details</DialogTitle>
-              </DialogHeader>
-              {selectedConfig && (
-                <div className="space-y-6">
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-sm text-muted-foreground">Configuration</h4>
-                      <p className="font-semibold">{selectedConfig.name}</p>
-                    </div>
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-sm text-muted-foreground">Status</h4>
-                      <Badge
-                        variant={selectedConfig.status === 'validated' ? 'default' : 'destructive'}
-                        className={selectedConfig.status === 'validated' ? 'bg-brand-success/10 text-brand-success' : ''}
-                      >
-                        {selectedConfig.status}
-                      </Badge>
-                    </div>
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-sm text-muted-foreground">Created</h4>
-                      <p className="font-semibold">{new Date(selectedConfig.createdAt).toLocaleString()}</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-sm text-muted-foreground">Control Summary</h4>
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div className="p-4 bg-brand-success/10 rounded-xl text-center">
-                        <div className="text-3xl font-bold text-brand-success mb-1">15</div>
-                        <div className="text-sm text-brand-success font-medium">Passed</div>
-                      </div>
-                      <div className="p-4 bg-brand-danger/10 rounded-xl text-center">
-                        <div className="text-3xl font-bold text-brand-danger mb-1">3</div>
-                        <div className="text-sm text-brand-danger font-medium">Failed</div>
-                      </div>
-                      <div className="p-4 bg-brand-warning/10 rounded-xl text-center">
-                        <div className="text-3xl font-bold text-brand-warning mb-1">2</div>
-                        <div className="text-sm text-brand-warning font-medium">Skipped</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3 pt-4">
-                    <Button
-                      onClick={() => setShowGenerateDialog(selectedConfig)}
-                      className="button-primary"
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      Generate PDF Report
-                    </Button>
-                    <Button variant="outline">
-                      <Download className="mr-2 h-4 w-4" />
-                      Export to Excel
-                    </Button>
-                    <Button variant="outline">
-                      <Download className="mr-2 h-4 w-4" />
-                      Export to CSV
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </DialogContent>
-          </Dialog>
-
-          {/* Generate Report Confirmation Dialog */}
-          <Dialog open={!!showGenerateDialog} onOpenChange={() => setShowGenerateDialog(null)}>
-            <DialogContent className="confirmation-dialog">
-              <DialogHeader className="text-center space-y-4">
-                <div className="w-16 h-16 bg-brand-primary/10 rounded-2xl flex items-center justify-center mx-auto">
-                  <Download className="w-8 h-8 text-brand-primary" />
-                </div>
-                <DialogTitle className="font-display text-xl">Generate Compliance Report</DialogTitle>
-                <DialogDescription className="typography-enhanced">
-                  You are about to generate a comprehensive compliance report for:
-                  <div className="mt-4 p-4 bg-muted/50 rounded-lg space-y-2">
-                    <div className="flex justify-between">
-                      <span className="font-medium">Configuration:</span>
-                      <span className="text-brand-primary font-semibold">{showGenerateDialog?.name}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">Device:</span>
-                      <span className="text-brand-secondary font-semibold">{getDeviceName(selectedDevice)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">Status:</span>
-                      <Badge variant={showGenerateDialog?.status === 'validated' ? 'default' : 'destructive'}>
-                        {showGenerateDialog?.status}
-                      </Badge>
-                    </div>
-                  </div>
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter className="flex space-x-2 pt-6">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowGenerateDialog(null)}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={() => handleGenerateReport(showGenerateDialog!._id)}
-                  className="button-primary flex-1"
-                >
-                  Generate Report
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </div>
       </div>
+
+      {/* View Details Dialog */}
+      <Dialog open={showViewDetails} onOpenChange={setShowViewDetails}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Configuration Details</DialogTitle>
+          </DialogHeader>
+          {selectedConfig && (
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Left: Device and Config Info */}
+              <Card className="glass-card">
+                <CardHeader>
+                  <CardTitle className="text-lg">Configuration Info</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div>
+                    <span className="font-medium">Config Name:</span> {selectedConfig.name}
+                  </div>
+                  <div>
+                    <span className="font-medium">Device:</span> {getDeviceName(selectedConfig.deviceId)}
+                  </div>
+                  <div>
+                    <span className="font-medium">Team:</span> {getTeamName(selectedConfig.teamId)}
+                  </div>
+                  <div>
+                    <span className="font-medium">Created:</span> {new Date(selectedConfig.createdAt).toLocaleDateString()}
+                  </div>
+                  <div>
+                    <span className="font-medium">Status:</span> 
+                    <Badge className="ml-2 bg-green-500/10 text-green-600">{selectedConfig.status}</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Middle: Control Details */}
+              <Card className="glass-card">
+                <CardHeader>
+                  <CardTitle className="text-lg">Control Details</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-64">
+                    <div className="space-y-4 text-sm">
+                      <div>
+                        <h4 className="font-medium">Control ID: 1.1.1</h4>
+                        <p className="text-muted-foreground">Ensure mounting of cramfs filesystems is disabled</p>
+                      </div>
+                      <div>
+                        <h4 className="font-medium">Control ID: 2.1.1</h4>
+                        <p className="text-muted-foreground">Ensure xinetd is not installed</p>
+                      </div>
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+
+              {/* Right: Marked Details */}
+              <Card className="glass-card">
+                <CardHeader>
+                  <CardTitle className="text-lg">Marked Details</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-64">
+                    <div className="space-y-4 text-sm">
+                      <div className="flex items-center justify-between p-2 border rounded">
+                        <span>1.1.1 Filesystem Controls</span>
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <span className="text-xs">Pass</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between p-2 border rounded">
+                        <span>2.1.1 Service Controls</span>
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <span className="text-xs">Pass</span>
+                        </div>
+                      </div>
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

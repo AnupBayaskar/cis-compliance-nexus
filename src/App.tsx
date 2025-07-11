@@ -4,7 +4,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Navbar } from "@/components/Navbar";
@@ -28,28 +27,26 @@ const App = () => (
       <Sonner />
       <AuthProvider>
         <BrowserRouter>
-          <SidebarProvider defaultOpen={false}>
-            <div className="min-h-screen flex w-full relative">
-              <AppSidebar />
-              <div className="flex-1 flex flex-col">
-                <Navbar />
-                <main className="flex-1">
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/team-space" element={<TeamSpace />} />
-                    <Route path="/device-space" element={<DeviceSpace />} />
-                    <Route path="/compliance-space" element={<ComplianceSpace />} />
-                    <Route path="/validation-space" element={<ValidationSpace />} />
-                    <Route path="/reports-space" element={<ReportsSpace />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/organization-space" element={<OrganizationSpace />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </main>
-              </div>
-              <MemberPanel />
+          <div className="min-h-screen flex w-full">
+            <AppSidebar />
+            <div className="flex-1 flex flex-col ml-20">
+              <Navbar />
+              <main className="flex-1 overflow-auto">
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/team-space" element={<TeamSpace />} />
+                  <Route path="/device-space" element={<DeviceSpace />} />
+                  <Route path="/compliance-space" element={<ComplianceSpace />} />
+                  <Route path="/validation-space" element={<ValidationSpace />} />
+                  <Route path="/reports-space" element={<ReportsSpace />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/organization-space" element={<OrganizationSpace />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
             </div>
-          </SidebarProvider>
+            <MemberPanel />
+          </div>
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
