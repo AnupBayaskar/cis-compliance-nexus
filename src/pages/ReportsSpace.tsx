@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -121,19 +120,19 @@ export default function ReportsSpace() {
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [expandedControls, setExpandedControls] = useState(false);
 
-  const getComplianceColor = (score) => {
+  const getComplianceColor = (score: number) => {
     if (score >= 90) return 'text-green-600';
     if (score >= 75) return 'text-yellow-600';
     return 'text-red-600';
   };
 
-  const getComplianceBadge = (score) => {
+  const getComplianceBadge = (score: number) => {
     if (score >= 90) return 'bg-green-100 text-green-800';
     if (score >= 75) return 'bg-yellow-100 text-yellow-800';
     return 'bg-red-100 text-red-800';
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     return status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800';
   };
 
@@ -154,7 +153,7 @@ export default function ReportsSpace() {
       return matchesSearch && matchesStatus && matchesCompliance;
     })
     .sort((a, b) => {
-      let aValue, bValue;
+      let aValue: any, bValue: any;
       
       switch (sortBy) {
         case 'compliance':
@@ -179,7 +178,7 @@ export default function ReportsSpace() {
       }
     });
 
-  const handleViewDetails = (device) => {
+  const handleViewDetails = (device: any) => {
     setSelectedDevice(device);
     setShowDetailsDialog(true);
   };
@@ -189,7 +188,7 @@ export default function ReportsSpace() {
     // Implementation for creating new report
   };
 
-  const handleDownloadReport = (device) => {
+  const handleDownloadReport = (device: any) => {
     console.log('Downloading report for:', device.device);
     // Implementation for downloading report
   };
@@ -259,7 +258,7 @@ export default function ReportsSpace() {
                   <SelectItem value="all">All Compliance</SelectItem>
                   <SelectItem value="high">High (90%+)</SelectItem>
                   <SelectItem value="medium">Medium (75-89%)</SelectItem>
-                  <SelectItem value="low">Low (<75%)</SelectItem>
+                  <SelectItem value="low">Low (&lt;75%)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -429,7 +428,7 @@ export default function ReportsSpace() {
                     <div className="flex justify-between items-center p-2 bg-green-50 rounded">
                       <span className="text-green-700">Passed Controls</span>
                       <span className="font-bold text-green-700">
-                        {selectedDevice.controls.filter(c => c.status === 'pass').length}
+                        {selectedDevice.controls.filter((c: any) => c.status === 'pass').length}
                       </span>
                     </div>
                   </div>
@@ -444,7 +443,7 @@ export default function ReportsSpace() {
                 <CardContent>
                   <ScrollArea className="h-64">
                     <div className="space-y-3">
-                      {selectedDevice.controls.map((control) => (
+                      {selectedDevice.controls.map((control: any) => (
                         <div key={control.id} className="p-3 border rounded-lg">
                           <div className="flex items-center justify-between mb-2">
                             <span className="font-medium text-sm">{control.id}</span>
