@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
@@ -10,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "./ui/input"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible"
+import { ScrollArea } from "./ui/scroll-area"
 import { ArrowLeft, ChevronDown, ChevronRight, Check, X, SkipForward, RotateCcw, Save, Shield, CheckCircle2 } from "lucide-react"
 import { motion } from "framer-motion"
 import { useCompliance } from "@/hooks/useCompliance"
