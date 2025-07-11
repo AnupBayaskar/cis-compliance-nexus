@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { User, Upload, HelpCircle, Eye, Settings, Crown, Mail, Calendar, CheckCircle, AlertCircle, Clock, Users, Monitor, Shield, FileText, Building } from 'lucide-react';
+import { User, Upload, HelpCircle, Eye, Settings, Crown, Mail, Calendar, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -188,6 +189,11 @@ export default function Profile() {
                 <div className="flex items-center gap-3 text-sm">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span>Joined {new Date(user.createdAt).toLocaleDateString()}</span>
+                </div>
+                <div className="pt-4 border-t">
+                  <p className="text-sm text-muted-foreground">
+                    {roleInfo.description}
+                  </p>
                 </div>
               </CardContent>
             </Card>
