@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react'
-import { ArrowLeft, Check, X, SkipForward, Shield, RotateCcw, Save, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, Check, X, SkipForward, Shield, RotateCcw, Save, CheckCircle2, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
@@ -29,7 +30,7 @@ interface ComplianceMarking {
 export function ComplianceMarking({ teamId, deviceId, onBack }: ComplianceMarkingProps) {
   const [selectedControl, setSelectedControl] = useState<ComplianceControl | null>(null)
   const [markings, setMarkings] = useState<Record<string, ComplianceMarking>>({})
-  const [currentMarkingType, setCurrentMarkingType<'pass' | 'fail' | 'skip' | ''>>('')
+  const [currentMarkingType, setCurrentMarkingType] = useState<'pass' | 'fail' | 'skip' | ''>('')
   const [currentExplanation, setCurrentExplanation] = useState('')
   const [currentComments, setCurrentComments] = useState('')
   const [showSaveDialog, setShowSaveDialog] = useState(false)
@@ -156,7 +157,7 @@ export function ComplianceMarking({ teamId, deviceId, onBack }: ComplianceMarkin
               
               <Button
                 onClick={() => setShowSaveDialog(true)}
-                className="button-primary flex items-center gap-2"
+                className="bg-primary hover:bg-primary/90 flex items-center gap-2"
                 disabled={Object.keys(markings).length === 0}
               >
                 <Save className="h-4 w-4" />
@@ -382,7 +383,7 @@ export function ComplianceMarking({ teamId, deviceId, onBack }: ComplianceMarkin
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button
-                        className="button-primary"
+                        className="bg-primary hover:bg-primary/90"
                         disabled={!currentMarkingType || !currentExplanation.trim()}
                       >
                         Mark
@@ -475,7 +476,7 @@ export function ComplianceMarking({ teamId, deviceId, onBack }: ComplianceMarkin
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
-                  className="button-primary flex-1"
+                  className="bg-primary hover:bg-primary/90 flex-1"
                   disabled={!configName.trim()}
                 >
                   Save Configuration
