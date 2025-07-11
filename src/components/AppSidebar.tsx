@@ -49,7 +49,8 @@ export function AppSidebar() {
   return (
     <aside 
       className={cn(
-        "fixed top-0 left-0 h-full bg-card border-r border-border z-50 flex flex-col transition-all duration-300 ease-in-out",
+        "fixed top-0 left-0 h-full bg-card border-r border-border flex flex-col transition-all duration-300 ease-in-out",
+        "z-40", // Lower z-index than navbar
         isExpanded ? "w-60" : "w-20"
       )}
       onMouseEnter={() => setIsExpanded(true)}
@@ -60,9 +61,12 @@ export function AppSidebar() {
         <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
           <Shield className="w-6 h-6 text-primary-foreground" />
         </div>
-        {isExpanded && (
-          <span className="ml-3 font-semibold text-lg whitespace-nowrap">CIS Compliance</span>
-        )}
+        <div className={cn(
+          "ml-3 transition-all duration-300 ease-in-out overflow-hidden",
+          isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0"
+        )}>
+          <span className="font-semibold text-lg whitespace-nowrap">CIS Compliance</span>
+        </div>
       </div>
 
       {/* Navigation */}
@@ -74,7 +78,7 @@ export function AppSidebar() {
               key={item.href}
               to={item.href}
               className={cn(
-                "flex items-center rounded-xl transition-all duration-200 group relative",
+                "flex items-center rounded-xl transition-all duration-300 ease-in-out group relative",
                 isExpanded ? "w-full h-12 px-3" : "w-12 h-12 justify-center",
                 isActivePath(item.href)
                   ? "bg-primary text-primary-foreground shadow-lg"
@@ -83,9 +87,14 @@ export function AppSidebar() {
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
               
-              {isExpanded ? (
-                <span className="ml-3 whitespace-nowrap">{item.name}</span>
-              ) : (
+              <div className={cn(
+                "ml-3 transition-all duration-300 ease-in-out overflow-hidden",
+                isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0"
+              )}>
+                <span className="whitespace-nowrap">{item.name}</span>
+              </div>
+              
+              {!isExpanded && (
                 <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
                   {item.name}
                 </div>
@@ -100,15 +109,20 @@ export function AppSidebar() {
         <button
           onClick={toggleTheme}
           className={cn(
-            "flex items-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200 group relative",
+            "flex items-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-300 ease-in-out group relative",
             isExpanded ? "w-full h-12 px-3" : "w-12 h-12 justify-center"
           )}
         >
           {isDark ? <Sun className="w-5 h-5 flex-shrink-0" /> : <Moon className="w-5 h-5 flex-shrink-0" />}
           
-          {isExpanded ? (
-            <span className="ml-3 whitespace-nowrap">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
-          ) : (
+          <div className={cn(
+            "ml-3 transition-all duration-300 ease-in-out overflow-hidden",
+            isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0"
+          )}>
+            <span className="whitespace-nowrap">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+          </div>
+          
+          {!isExpanded && (
             <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
               {isDark ? 'Light Mode' : 'Dark Mode'}
             </div>
@@ -123,15 +137,20 @@ export function AppSidebar() {
           target="_blank"
           rel="noopener noreferrer"
           className={cn(
-            "flex items-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200 group relative",
+            "flex items-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-300 ease-in-out group relative",
             isExpanded ? "w-full h-12 px-3" : "w-12 h-12 justify-center"
           )}
         >
           <ExternalLink className="w-5 h-5 flex-shrink-0" />
           
-          {isExpanded ? (
-            <span className="ml-3 whitespace-nowrap">SmartEdge.in</span>
-          ) : (
+          <div className={cn(
+            "ml-3 transition-all duration-300 ease-in-out overflow-hidden",
+            isExpanded ? "opacity-100 w-auto" : "opacity-0 w-0"
+          )}>
+            <span className="whitespace-nowrap">SmartEdge.in</span>
+          </div>
+          
+          {!isExpanded && (
             <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
               SmartEdge.in
             </div>
