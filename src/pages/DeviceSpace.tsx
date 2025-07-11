@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,17 @@ const mockTeams = [
   { _id: '2', name: 'IT Operations' }
 ];
 
-const mockDevices = [
+interface Device {
+  _id: string;
+  name: string;
+  type: string;
+  ipAddress: string;
+  status: 'online' | 'offline';
+  teamId: string;
+  lastSeen: string;
+}
+
+const mockDevices: Device[] = [
   {
     _id: '1',
     name: 'Web Server 01',
@@ -46,28 +55,28 @@ const mockDevices = [
 ];
 
 export default function DeviceSpace() {
-  const [devices, setDevices] = useState(mockDevices);
+  const [devices, setDevices] = useState<Device[]>(mockDevices);
   const [teams, setTeams] = useState(mockTeams);
   const [loading, setLoading] = useState(false);
-  const [selectedDevice, setSelectedDevice] = useState(null);
+  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [showAddDevice, setShowAddDevice] = useState(false);
   const [newDevice, setNewDevice] = useState({ name: '', type: '', ipAddress: '', teamId: '' });
 
-  const handleAddDevice = (e) => {
+  const handleAddDevice = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Adding new device:', newDevice);
     setShowAddDevice(false);
     setNewDevice({ name: '', type: '', ipAddress: '', teamId: '' });
   };
 
-  const getDeviceIcon = (type) => {
+  const getDeviceIcon = (type: string) => {
     if (type.toLowerCase().includes('server')) return Server;
     if (type.toLowerCase().includes('mobile') || type.toLowerCase().includes('phone')) return Smartphone;
     if (type.toLowerCase().includes('laptop') || type.toLowerCase().includes('desktop')) return Laptop;
     return Monitor;
   };
 
-  const getTeamName = (teamId) => {
+  const getTeamName = (teamId: string) => {
     const team = teams.find(t => t._id === teamId);
     return team?.name || 'Unknown Team';
   };
@@ -79,7 +88,7 @@ export default function DeviceSpace() {
     }
     acc[teamName].push(device);
     return acc;
-  }, {});
+  }, {} as Record<string, Device[]>);
 
   if (loading) {
     return (
