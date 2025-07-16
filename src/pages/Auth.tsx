@@ -1,23 +1,29 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { Shield, Mail, Lock, User, Phone } from 'lucide-react';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { Shield, Mail, Lock, User, Phone } from "lucide-react";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    phone: '',
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    phone: "",
   });
   const { login, register } = useAuth();
   const { toast } = useToast();
@@ -37,44 +43,51 @@ const Auth = () => {
         if (result) {
           toast({
             title: `Welcome back, ${result.user.name}!`,
-            description: 'You have been successfully logged in.',
+            description: "You have been successfully logged in.",
           });
-          navigate('/');
+          navigate("/");
         }
       } else {
         if (formData.password !== formData.confirmPassword) {
           toast({
-            title: 'Password mismatch',
-            description: 'Passwords do not match.',
-            variant: 'destructive',
+            title: "Password mismatch",
+            description: "Passwords do not match.",
+            variant: "destructive",
           });
           return;
         }
 
         if (!validatePassword(formData.password)) {
           toast({
-            title: 'Invalid password',
-            description: 'Password must be at least 6 characters long.',
-            variant: 'destructive',
+            title: "Invalid password",
+            description: "Password must be at least 6 characters long.",
+            variant: "destructive",
           });
           return;
         }
 
-        const result = await register(formData.name, formData.email, formData.password, formData.phone || undefined);
+        const result = await register(
+          formData.name,
+          formData.email,
+          formData.password,
+          formData.phone || undefined
+        );
         if (result) {
           toast({
-            title: 'Account created!',
+            title: "Account created!",
             description: `Welcome, ${result.user.name}! Your account has been successfully created.`,
           });
-          navigate('/');
+          navigate("/");
         }
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Something went wrong. Please try again.';
+      const errorMessage =
+        error.response?.data?.message ||
+        "Something went wrong. Please try again.";
       toast({
-        title: isLogin ? 'Login failed' : 'Registration failed',
+        title: isLogin ? "Login failed" : "Registration failed",
         description: errorMessage,
-        variant: 'destructive',
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -88,23 +101,34 @@ const Auth = () => {
     });
   };
 
+  // Debug: Show current user/tokendo that
+  const { user, token } = useAuth();
+  console.log("[Auth.tsx] Current user:", user, "token:", token);
+
   return (
     <div className="min-h-screen flex items-center justify-center section-padding bg-gradient-to-br from-background via-muted/20 to-background">
       <div className="absolute inset-0 bg-grid-black/[0.02] bg-[size:60px_60px]" />
-      
+      {/* Debug info */}
+      <div className="fixed top-2 right-2 bg-yellow-100 text-yellow-800 rounded p-2 text-xs z-50 max-w-xs break-words">
+        <div>
+          <b>Debug User:</b> {user ? JSON.stringify(user) : "null"}
+        </div>
+        <div>
+          <b>Token:</b> {token ? token.slice(0, 16) + "..." : "null"}
+        </div>
+      </div>
       <Card className="w-full max-w-md relative z-10 shadow-2xl border-border/50">
         <CardHeader className="text-center">
           <div className="w-16 h-16 bg-gradient-to-br from-brand-green to-brand-gray rounded-full flex items-center justify-center mx-auto mb-4">
             <Shield className="h-8 w-8 text-white" />
           </div>
           <CardTitle className="text-2xl font-bold">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
+            {isLogin ? "Welcome Back" : "Create Account"}
           </CardTitle>
           <CardDescription>
-            {isLogin 
-              ? 'Sign in to access your compliance dashboard'
-              : 'Join us to start managing your security compliance'
-            }
+            {isLogin
+              ? "Sign in to access your compliance dashboard"
+              : "Join us to start managing your security compliance"}
           </CardDescription>
         </CardHeader>
 
@@ -200,7 +224,11 @@ const Auth = () => {
             )}
 
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Loading...' : (isLogin ? 'Sign In' : 'Create Account')}
+              {isLoading
+                ? "Loading..."
+                : isLogin
+                ? "Sign In"
+                : "Create Account"}
             </Button>
           </form>
 
@@ -215,7 +243,7 @@ const Auth = () => {
               onClick={() => setIsLogin(!isLogin)}
               className="p-0 h-auto font-semibold"
             >
-              {isLogin ? 'Create one now' : 'Sign in instead'}
+              {isLogin ? "Create one now" : "Sign in instead"}
             </Button>
           </div>
         </CardContent>

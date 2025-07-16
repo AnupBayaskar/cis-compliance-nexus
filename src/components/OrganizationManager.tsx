@@ -1,16 +1,55 @@
+// --- Types for Team and User ---
+interface Team {
+  _id: string;
+  name: string;
+  details: string;
+  admin: string;
+  members: User[];
+}
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+}
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Plus, Building, Users, Trash2, Edit, Shield, CheckCircle2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  Plus,
+  Building,
+  Users,
+  Trash2,
+  Edit,
+  Shield,
+  CheckCircle2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 
 interface Organization {
   _id: string;
@@ -19,37 +58,54 @@ interface Organization {
   createdAt: string;
   memberCount: number;
   teamCount: number;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
 }
 
 export function OrganizationManager() {
+  // --- Teams and Users State ---
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [showAddTeamDialog, setShowAddTeamDialog] = useState(false);
+  const [showAddUserDialog, setShowAddUserDialog] = useState<{
+    open: boolean;
+    team: Team | null;
+  }>({ open: false, team: null });
+  const [newTeam, setNewTeam] = useState({ name: "", details: "", admin: "" });
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    role: "member",
+  });
   const [organizations, setOrganizations] = useState<Organization[]>([
     {
-      _id: '1',
-      name: 'TechCorp Security',
-      description: 'Enterprise security compliance management',
-      createdAt: '2024-01-15T10:00:00Z',
+      _id: "1",
+      name: "TechCorp Security",
+      description: "Enterprise security compliance management",
+      createdAt: "2024-01-15T10:00:00Z",
       memberCount: 45,
       teamCount: 8,
-      status: 'active'
+      status: "active",
     },
     {
-      _id: '2',
-      name: 'Healthcare Systems',
-      description: 'HIPAA compliance and healthcare IT security',
-      createdAt: '2024-01-10T14:30:00Z',
+      _id: "2",
+      name: "Healthcare Systems",
+      description: "HIPAA compliance and healthcare IT security",
+      createdAt: "2024-01-10T14:30:00Z",
       memberCount: 23,
       teamCount: 4,
-      status: 'active'
-    }
+      status: "active",
+    },
   ]);
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState<Organization | null>(null);
-  const [showDeleteDialog, setShowDeleteDialog] = useState<Organization | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState<Organization | null>(
+    null
+  );
+  const [showDeleteDialog, setShowDeleteDialog] = useState<Organization | null>(
+    null
+  );
   const [newOrganization, setNewOrganization] = useState({
-    name: '',
-    description: ''
+    name: "",
+    description: "",
   });
   const { toast } = useToast();
 
@@ -58,7 +114,7 @@ export function OrganizationManager() {
       toast({
         title: "Missing Information",
         description: "Organization name is required",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -71,11 +127,11 @@ export function OrganizationManager() {
         createdAt: new Date().toISOString(),
         memberCount: 1,
         teamCount: 0,
-        status: 'active'
+        status: "active",
       };
 
       setOrganizations([...organizations, newOrg]);
-      setNewOrganization({ name: '', description: '' });
+      setNewOrganization({ name: "", description: "" });
       setShowCreateDialog(false);
 
       toast({
@@ -86,14 +142,14 @@ export function OrganizationManager() {
       toast({
         title: "Error",
         description: "Failed to create organization",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
 
   const handleDeleteOrganization = async (orgId: string) => {
     try {
-      setOrganizations(organizations.filter(org => org._id !== orgId));
+      setOrganizations(organizations.filter((org) => org._id !== orgId));
       setShowDeleteDialog(null);
 
       toast({
@@ -104,7 +160,7 @@ export function OrganizationManager() {
       toast({
         title: "Error",
         description: "Failed to delete organization",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
@@ -133,7 +189,7 @@ export function OrganizationManager() {
           </div>
         </div>
 
-        <Button 
+        <Button
           onClick={() => setShowCreateDialog(true)}
           className="button-primary shadow-lg"
           size="lg"
@@ -160,13 +216,87 @@ export function OrganizationManager() {
                       <Building className="w-5 h-5 text-brand-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg font-display">{org.name}</CardTitle>
-                      <Badge 
-                        variant={org.status === 'active' ? 'default' : 'secondary'}
-                        className={org.status === 'active' ? 'bg-brand-success/10 text-brand-success' : ''}
+                      <CardTitle className="text-lg font-display">
+                        {org.name}
+                      </CardTitle>
+                      <Badge
+                        variant={
+                          org.status === "active" ? "default" : "secondary"
+                        }
+                        className={
+                          org.status === "active"
+                            ? "bg-brand-success/10 text-brand-success"
+                            : ""
+                        }
                       >
                         {org.status}
                       </Badge>
+                      {/* --- Teams Section for Org Admin --- */}
+                      <div className="mt-6">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="text-lg font-bold">Teams</h3>
+                          <Button
+                            size="sm"
+                            onClick={() => setShowAddTeamDialog(true)}
+                          >
+                            <Plus className="w-4 h-4 mr-1" /> Add Team
+                          </Button>
+                        </div>
+                        <div className="space-y-3">
+                          {teams.length === 0 && (
+                            <div className="text-xs text-muted-foreground">
+                              No teams yet.
+                            </div>
+                          )}
+                          {teams.map((team) => (
+                            <Card key={team._id} className="border p-3">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <div className="font-semibold">
+                                    {team.name}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {team.details}
+                                  </div>
+                                  <div className="text-xs mt-1">
+                                    Admin: {team.admin}
+                                  </div>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  onClick={() =>
+                                    setShowAddUserDialog({ open: true, team })
+                                  }
+                                >
+                                  <Plus className="w-3 h-3 mr-1" /> Add User
+                                </Button>
+                              </div>
+                              {/* Users in team */}
+                              <div className="mt-2 ml-2">
+                                <div className="text-xs font-bold mb-1">
+                                  Members:
+                                </div>
+                                {team.members.length === 0 && (
+                                  <div className="text-xs text-muted-foreground">
+                                    No users yet.
+                                  </div>
+                                )}
+                                {team.members.map((user) => (
+                                  <div
+                                    key={user._id}
+                                    className="text-xs flex gap-2 items-center"
+                                  >
+                                    <span>{user.name}</span>
+                                    <span className="text-muted-foreground">
+                                      ({user.role})
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -179,6 +309,193 @@ export function OrganizationManager() {
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
+                    {/* Add Team Dialog */}
+                    <Dialog
+                      open={showAddTeamDialog}
+                      onOpenChange={setShowAddTeamDialog}
+                    >
+                      <DialogContent className="max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Add New Team</DialogTitle>
+                        </DialogHeader>
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            if (!newTeam.name.trim() || !newTeam.admin.trim())
+                              return;
+                            const team: Team = {
+                              _id: `team_${Date.now()}`,
+                              name: newTeam.name.trim(),
+                              details: newTeam.details.trim(),
+                              admin: newTeam.admin.trim(),
+                              members: [],
+                            };
+                            setTeams([...teams, team]);
+                            setNewTeam({ name: "", details: "", admin: "" });
+                            setShowAddTeamDialog(false);
+                            toast({
+                              title: "Team Created",
+                              description: `${team.name} created.`,
+                            });
+                          }}
+                          className="space-y-4"
+                        >
+                          <div>
+                            <Label htmlFor="teamName">Team Name</Label>
+                            <Input
+                              id="teamName"
+                              value={newTeam.name}
+                              onChange={(e) =>
+                                setNewTeam({ ...newTeam, name: e.target.value })
+                              }
+                              required
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="teamDetails">Details</Label>
+                            <Textarea
+                              id="teamDetails"
+                              value={newTeam.details}
+                              onChange={(e) =>
+                                setNewTeam({
+                                  ...newTeam,
+                                  details: e.target.value,
+                                })
+                              }
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="teamAdmin">Admin Name</Label>
+                            <Input
+                              id="teamAdmin"
+                              value={newTeam.admin}
+                              onChange={(e) =>
+                                setNewTeam({
+                                  ...newTeam,
+                                  admin: e.target.value,
+                                })
+                              }
+                              required
+                            />
+                          </div>
+                          <DialogFooter>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setShowAddTeamDialog(false)}
+                            >
+                              Cancel
+                            </Button>
+                            <Button type="submit">Create Team</Button>
+                          </DialogFooter>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+
+                    {/* Add User to Team Dialog */}
+                    <Dialog
+                      open={showAddUserDialog.open}
+                      onOpenChange={(open) =>
+                        setShowAddUserDialog({
+                          open,
+                          team: showAddUserDialog.team,
+                        })
+                      }
+                    >
+                      <DialogContent className="max-w-md">
+                        <DialogHeader>
+                          <DialogTitle>Add User to Team</DialogTitle>
+                        </DialogHeader>
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            if (!newUser.name.trim() || !newUser.email.trim())
+                              return;
+                            if (!showAddUserDialog.team) return;
+                            const user: User = {
+                              _id: `user_${Date.now()}`,
+                              name: newUser.name.trim(),
+                              email: newUser.email.trim(),
+                              role: newUser.role,
+                            };
+                            setTeams(
+                              teams.map((team) =>
+                                team._id === showAddUserDialog.team!._id
+                                  ? {
+                                      ...team,
+                                      members: [...team.members, user],
+                                    }
+                                  : team
+                              )
+                            );
+                            setNewUser({ name: "", email: "", role: "member" });
+                            setShowAddUserDialog({ open: false, team: null });
+                            toast({
+                              title: "User Added",
+                              description: `${user.name} added to ${showAddUserDialog.team.name}`,
+                            });
+                          }}
+                          className="space-y-4"
+                        >
+                          <div>
+                            <Label htmlFor="userName">Name</Label>
+                            <Input
+                              id="userName"
+                              value={newUser.name}
+                              onChange={(e) =>
+                                setNewUser({ ...newUser, name: e.target.value })
+                              }
+                              required
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="userEmail">Email</Label>
+                            <Input
+                              id="userEmail"
+                              type="email"
+                              value={newUser.email}
+                              onChange={(e) =>
+                                setNewUser({
+                                  ...newUser,
+                                  email: e.target.value,
+                                })
+                              }
+                              required
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="userRole">Role</Label>
+                            <select
+                              id="userRole"
+                              value={newUser.role}
+                              onChange={(e) =>
+                                setNewUser({ ...newUser, role: e.target.value })
+                              }
+                              className="w-full border rounded px-2 py-1"
+                            >
+                              <option value="member">Member</option>
+                              <option value="validator">Validator</option>
+                              <option value="team-lead">Team Lead</option>
+                            </select>
+                          </div>
+                          <DialogFooter>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() =>
+                                setShowAddUserDialog({
+                                  open: false,
+                                  team: null,
+                                })
+                              }
+                            >
+                              Cancel
+                            </Button>
+                            <Button type="submit">Add User</Button>
+                          </DialogFooter>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
@@ -194,15 +511,19 @@ export function OrganizationManager() {
                           <div className="w-16 h-16 bg-brand-danger/10 rounded-2xl flex items-center justify-center mx-auto">
                             <Trash2 className="w-8 h-8 text-brand-danger" />
                           </div>
-                          <AlertDialogTitle className="font-display">Delete Organization</AlertDialogTitle>
+                          <AlertDialogTitle className="font-display">
+                            Delete Organization
+                          </AlertDialogTitle>
                           <AlertDialogDescription className="typography-enhanced">
-                            Are you sure you want to delete <span className="font-semibold">{org.name}</span>? 
-                            This action cannot be undone and will remove all associated teams and data.
+                            Are you sure you want to delete{" "}
+                            <span className="font-semibold">{org.name}</span>?
+                            This action cannot be undone and will remove all
+                            associated teams and data.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter className="flex space-x-2">
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction 
+                          <AlertDialogAction
                             onClick={() => handleDeleteOrganization(org._id)}
                             className="bg-brand-danger hover:bg-brand-danger/90"
                           >
@@ -217,7 +538,7 @@ export function OrganizationManager() {
 
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground typography-enhanced">
-                  {org.description || 'No description provided'}
+                  {org.description || "No description provided"}
                 </p>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -225,7 +546,9 @@ export function OrganizationManager() {
                     <div className="flex items-center justify-center mb-1">
                       <Users className="w-4 h-4 text-brand-primary mr-1" />
                     </div>
-                    <div className="text-lg font-bold text-brand-primary">{org.memberCount}</div>
+                    <div className="text-lg font-bold text-brand-primary">
+                      {org.memberCount}
+                    </div>
                     <div className="text-xs text-muted-foreground">Members</div>
                   </div>
 
@@ -233,7 +556,9 @@ export function OrganizationManager() {
                     <div className="flex items-center justify-center mb-1">
                       <Shield className="w-4 h-4 text-brand-secondary mr-1" />
                     </div>
-                    <div className="text-lg font-bold text-brand-secondary">{org.teamCount}</div>
+                    <div className="text-lg font-bold text-brand-secondary">
+                      {org.teamCount}
+                    </div>
                     <div className="text-xs text-muted-foreground">Teams</div>
                   </div>
                 </div>
@@ -254,9 +579,12 @@ export function OrganizationManager() {
             <div className="w-16 h-16 bg-brand-primary/10 rounded-2xl flex items-center justify-center mx-auto">
               <Plus className="w-8 h-8 text-brand-primary" />
             </div>
-            <DialogTitle className="font-display">Create New Organization</DialogTitle>
+            <DialogTitle className="font-display">
+              Create New Organization
+            </DialogTitle>
             <DialogDescription className="typography-enhanced">
-              Set up a new organization to manage compliance across teams and devices
+              Set up a new organization to manage compliance across teams and
+              devices
             </DialogDescription>
           </DialogHeader>
 
@@ -268,18 +596,30 @@ export function OrganizationManager() {
               <Input
                 id="orgName"
                 value={newOrganization.name}
-                onChange={(e) => setNewOrganization({ ...newOrganization, name: e.target.value })}
+                onChange={(e) =>
+                  setNewOrganization({
+                    ...newOrganization,
+                    name: e.target.value,
+                  })
+                }
                 placeholder="Enter organization name..."
                 className="mt-2"
               />
             </div>
 
             <div>
-              <Label htmlFor="orgDescription" className="font-semibold">Description</Label>
+              <Label htmlFor="orgDescription" className="font-semibold">
+                Description
+              </Label>
               <Textarea
                 id="orgDescription"
                 value={newOrganization.description}
-                onChange={(e) => setNewOrganization({ ...newOrganization, description: e.target.value })}
+                onChange={(e) =>
+                  setNewOrganization({
+                    ...newOrganization,
+                    description: e.target.value,
+                  })
+                }
                 placeholder="Brief description of the organization..."
                 className="mt-2"
                 rows={3}
@@ -288,17 +628,17 @@ export function OrganizationManager() {
           </div>
 
           <DialogFooter className="flex space-x-2 pt-6">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
                 setShowCreateDialog(false);
-                setNewOrganization({ name: '', description: '' });
+                setNewOrganization({ name: "", description: "" });
               }}
               className="flex-1"
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleCreateOrganization}
               className="button-primary flex-1"
               disabled={!newOrganization.name.trim()}
