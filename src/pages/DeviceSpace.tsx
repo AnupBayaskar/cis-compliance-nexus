@@ -1,17 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Monitor, Plus, Wifi, WifiOff, Server, Smartphone, Laptop } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import {
+  Monitor,
+  Plus,
+  Wifi,
+  WifiOff,
+  Server,
+  Smartphone,
+  Laptop,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // Mock data
 const mockTeams = [
-  { _id: '1', name: 'Security Team' },
-  { _id: '2', name: 'IT Operations' }
+  { _id: "1", name: "Security Team" },
+  { _id: "2", name: "IT Operations" },
 ];
 
 interface Device {
@@ -19,68 +38,181 @@ interface Device {
   name: string;
   type: string;
   ipAddress: string;
-  status: 'online' | 'offline';
+  status: "online" | "offline";
   teamId: string;
   lastSeen: string;
 }
 
 const mockDevices: Device[] = [
   {
-    _id: '1',
-    name: 'Web Server 01',
-    type: 'Ubuntu Server 20.04',
-    ipAddress: '192.168.1.100',
-    status: 'online',
-    teamId: '1',
-    lastSeen: new Date().toISOString()
+    _id: "1",
+    name: "Web Server",
+    type: "Ubuntu Server 20.04",
+    ipAddress: "192.168.1.100",
+    status: "online",
+    teamId: "1",
+    lastSeen: new Date().toISOString(),
   },
   {
-    _id: '2',
-    name: 'Database Server',
-    type: 'CentOS 8',
-    ipAddress: '192.168.1.101',
-    status: 'online',
-    teamId: '1',
-    lastSeen: new Date().toISOString()
+    _id: "2",
+    name: "Database Server",
+    type: "CentOS 8",
+    ipAddress: "192.168.1.101",
+    status: "online",
+    teamId: "1",
+    lastSeen: new Date().toISOString(),
   },
   {
-    _id: '3',
-    name: 'John Laptop',
-    type: 'Windows 11 Pro',
-    ipAddress: '192.168.1.150',
-    status: 'offline',
-    teamId: '2',
-    lastSeen: new Date(Date.now() - 86400000).toISOString()
-  }
+    _id: "3",
+    name: "John Laptop",
+    type: "Windows 11 Pro",
+    ipAddress: "192.168.1.150",
+    status: "offline",
+    teamId: "2",
+    lastSeen: new Date(Date.now() - 86400000).toISOString(),
+  },
 ];
 
 export default function DeviceSpace() {
+  // const { user } = useAuth(); // Removed duplicate user declaration
   const [devices, setDevices] = useState<Device[]>(mockDevices);
-  const [teams, setTeams] = useState(mockTeams);
+  // Removed duplicate teams state, handled below
   const [loading, setLoading] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [showAddDevice, setShowAddDevice] = useState(false);
-  const [newDevice, setNewDevice] = useState({ name: '', type: '', ipAddress: '', teamId: '' });
+  const [newDevice, setNewDevice] = useState({
+    name: "",
+    type: "",
+    ipAddress: "",
+    teamId: "",
+  });
 
   const handleAddDevice = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Adding new device:', newDevice);
+    console.log("Adding new device:", newDevice);
     setShowAddDevice(false);
-    setNewDevice({ name: '', type: '', ipAddress: '', teamId: '' });
+    setNewDevice({ name: "", type: "", ipAddress: "", teamId: "" });
   };
 
   const getDeviceIcon = (type: string) => {
-    if (type.toLowerCase().includes('server')) return Server;
-    if (type.toLowerCase().includes('mobile') || type.toLowerCase().includes('phone')) return Smartphone;
-    if (type.toLowerCase().includes('laptop') || type.toLowerCase().includes('desktop')) return Laptop;
+    if (type.toLowerCase().includes("server")) return Server;
+    if (
+      type.toLowerCase().includes("mobile") ||
+      type.toLowerCase().includes("phone")
+    )
+      return Smartphone;
+    if (
+      type.toLowerCase().includes("laptop") ||
+      type.toLowerCase().includes("desktop")
+    )
+      return Laptop;
     return Monitor;
   };
-
+  const [teams, setTeams] = useState<{ _id: string; name: string }[]>([]);
   const getTeamName = (teamId: string) => {
-    const team = teams.find(t => t._id === teamId);
-    return team?.name || 'Unknown Team';
+    const team = teams.find((t) => t._id === teamId);
+    return team?.name || "Unknown Team";
   };
 
+  // Fetch organizations for the user (like OrganizationSpace)
+  const [organizations, setOrganizations] = useState<
+    { _id: string; name: string }[]
+  >([]);
+  const [selectedOrg, setSelectedOrg] = useState<{
+    _id: string;
+    name: string;
+  } | null>(null);
+
+  // You need to get the user object, for example from context or props
+  // Example using a placeholder for user and getToken (replace with your actual logic):
+  const user = { role: "organization-lead", email: "admin1@example.com" }; // TODO: Replace with real user context
+  const getToken = () => localStorage.getItem("governer-token");
+
+  React.useEffect(() => {
+    const fetchOrganizations = async () => {
+      try {
+        let url = "http://localhost:3000/organizations";
+        // If org admin, filter by admin email or id
+        console.log("hellow", user, user.role, user.email);
+        if (user && user.role === "organization-lead" && user.email) {
+          url += `?adminEmail=${encodeURIComponent(user.email)}`;
+        }
+        console.log("[OrganizationSpace] Fetching organizations from:", url);
+        const res = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${getToken()}`,
+          },
+        });
+        if (!res.ok) {
+          throw new Error("Failed to fetch organizations");
+        }
+        const orgs = await res.json();
+        console.log("[OrganizationSpace] Organizations fetched:", orgs);
+        setOrganizations(orgs);
+      } catch (err) {
+        // Optionally show toast
+        console.error("[OrganizationSpace] Error fetching organizations:", err);
+      }
+    };
+    fetchOrganizations();
+    // Only refetch if user changes
+  }, []);
+  // Organization selection UI (like OrganizationSpace)
+  // Only show if user has more than one org
+  const renderOrgSelector = () =>
+    organizations.length > 1 ? (
+      <div className="mb-6">
+        <Select
+          value={selectedOrg?._id || ""}
+          onValueChange={(orgId) => {
+            const org = organizations.find((o) => o._id === orgId);
+            if (org) setSelectedOrg(org);
+          }}
+        >
+          <SelectTrigger className="w-72">
+            <SelectValue placeholder="Select Organization" />
+          </SelectTrigger>
+          <SelectContent>
+            {organizations.map((org) => (
+              <SelectItem key={org._id} value={org._id}>
+                {org.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    ) : null;
+
+  // Fetch teams for selected organization (like OrganizationSpace)
+  useEffect(() => {
+    // if (!selectedOrg) return;
+    console.log("here", selectedOrg._id);
+    const fetchTeams = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(
+          `http://localhost:3000/teams?organization_id=${
+            selectedOrg._id || (selectedOrg as any).id
+          }`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("governer-token")}`,
+            },
+          }
+        );
+        if (!res.ok) throw new Error("Failed to fetch teams");
+        const data = await res.json();
+        setTeams(data);
+      } catch (err) {
+        setTeams([]);
+        // Optionally show toast
+        console.error("Error fetching teams:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTeams();
+  }, [selectedOrg]);
   const devicesByTeam = devices.reduce((acc, device) => {
     const teamName = getTeamName(device.teamId);
     if (!acc[teamName]) {
@@ -102,7 +234,10 @@ export default function DeviceSpace() {
                   <div className="h-6 bg-muted rounded animate-pulse" />
                   <div className="grid grid-cols-4 gap-4">
                     {[...Array(4)].map((_, j) => (
-                      <div key={j} className="h-32 bg-muted rounded animate-pulse" />
+                      <div
+                        key={j}
+                        className="h-32 bg-muted rounded animate-pulse"
+                      />
                     ))}
                   </div>
                 </div>
@@ -122,13 +257,20 @@ export default function DeviceSpace() {
         </div>
         <div>
           <h1 className="text-3xl font-bold">Device Space</h1>
-          <p className="text-muted-foreground">Manage devices across your organization</p>
+          <p className="text-muted-foreground">
+            Manage devices across your organization
+          </p>
         </div>
       </div>
 
+      {renderOrgSelector()}
+
       <div className="space-y-6">
         {Object.entries(devicesByTeam).map(([teamName, teamDevices]) => (
-          <Card key={teamName} className="border hover:shadow-lg transition-all duration-300">
+          <Card
+            key={teamName}
+            className="border hover:shadow-lg transition-all duration-300"
+          >
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
@@ -136,7 +278,9 @@ export default function DeviceSpace() {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold">{teamName}</h3>
-                  <p className="text-sm text-muted-foreground">{teamDevices.length} devices</p>
+                  <p className="text-sm text-muted-foreground">
+                    {teamDevices.length} devices
+                  </p>
                 </div>
               </CardTitle>
             </CardHeader>
@@ -156,29 +300,45 @@ export default function DeviceSpace() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium truncate">{device.name}</p>
-                          <p className="text-sm text-muted-foreground truncate">{device.type}</p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {device.type}
+                          </p>
                         </div>
                       </div>
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">Status</span>
+                          <span className="text-sm text-muted-foreground">
+                            Status
+                          </span>
                           <div className="flex items-center gap-1">
-                            {device.status === 'online' ? (
+                            {device.status === "online" ? (
                               <Wifi className="h-4 w-4 text-green-600" />
                             ) : (
                               <WifiOff className="h-4 w-4 text-red-500" />
                             )}
                             <Badge
-                              variant={device.status === 'online' ? 'default' : 'destructive'}
-                              className={device.status === 'online' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : ''}
+                              variant={
+                                device.status === "online"
+                                  ? "default"
+                                  : "destructive"
+                              }
+                              className={
+                                device.status === "online"
+                                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                                  : ""
+                              }
                             >
                               {device.status}
                             </Badge>
                           </div>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">IP</span>
-                          <span className="text-sm font-mono">{device.ipAddress}</span>
+                          <span className="text-sm text-muted-foreground">
+                            IP
+                          </span>
+                          <span className="text-sm font-mono">
+                            {device.ipAddress}
+                          </span>
                         </div>
                         <Button
                           variant="ghost"
@@ -195,7 +355,7 @@ export default function DeviceSpace() {
                 <div
                   className="p-4 rounded-xl border-2 border-dashed border-green-300 hover:border-green-500 hover:bg-green-50 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center min-h-[200px]"
                   onClick={() => {
-                    const team = teams.find(t => t.name === teamName);
+                    const team = teams.find((t) => t.name === teamName);
                     if (team) {
                       setNewDevice({ ...newDevice, teamId: team._id });
                       setShowAddDevice(true);
@@ -205,7 +365,9 @@ export default function DeviceSpace() {
                   <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
                     <Plus className="h-6 w-6 text-green-600" />
                   </div>
-                  <p className="text-sm font-medium text-green-600">Add Device</p>
+                  <p className="text-sm font-medium text-green-600">
+                    Add Device
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -223,24 +385,32 @@ export default function DeviceSpace() {
             <Input
               placeholder="Device Name"
               value={newDevice.name}
-              onChange={(e) => setNewDevice({ ...newDevice, name: e.target.value })}
+              onChange={(e) =>
+                setNewDevice({ ...newDevice, name: e.target.value })
+              }
               required
             />
             <Input
               placeholder="Device Type (e.g., Ubuntu Server, Windows 10)"
               value={newDevice.type}
-              onChange={(e) => setNewDevice({ ...newDevice, type: e.target.value })}
+              onChange={(e) =>
+                setNewDevice({ ...newDevice, type: e.target.value })
+              }
               required
             />
             <Input
               placeholder="IP Address"
               value={newDevice.ipAddress}
-              onChange={(e) => setNewDevice({ ...newDevice, ipAddress: e.target.value })}
+              onChange={(e) =>
+                setNewDevice({ ...newDevice, ipAddress: e.target.value })
+              }
               required
             />
             <Select
               value={newDevice.teamId}
-              onValueChange={(value) => setNewDevice({ ...newDevice, teamId: value })}
+              onValueChange={(value) =>
+                setNewDevice({ ...newDevice, teamId: value })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select Team" />
@@ -254,7 +424,12 @@ export default function DeviceSpace() {
               </SelectContent>
             </Select>
             <div className="flex gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={() => setShowAddDevice(false)} className="flex-1">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowAddDevice(false)}
+                className="flex-1"
+              >
                 Cancel
               </Button>
               <Button type="submit" className="flex-1">
@@ -266,7 +441,10 @@ export default function DeviceSpace() {
       </Dialog>
 
       {/* Device Details Dialog */}
-      <Dialog open={!!selectedDevice} onOpenChange={() => setSelectedDevice(null)}>
+      <Dialog
+        open={!!selectedDevice}
+        onOpenChange={() => setSelectedDevice(null)}
+      >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Device Details</DialogTitle>
@@ -281,7 +459,9 @@ export default function DeviceSpace() {
                   })()}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold">{selectedDevice.name}</h3>
+                  <h3 className="text-lg font-semibold">
+                    {selectedDevice.name}
+                  </h3>
                   <p className="text-muted-foreground">{selectedDevice.type}</p>
                 </div>
               </div>
@@ -289,14 +469,22 @@ export default function DeviceSpace() {
                 <div>
                   <p className="text-sm text-muted-foreground">Status</p>
                   <div className="flex items-center gap-2 mt-1">
-                    {selectedDevice.status === 'online' ? (
+                    {selectedDevice.status === "online" ? (
                       <Wifi className="h-4 w-4 text-green-600" />
                     ) : (
                       <WifiOff className="h-4 w-4 text-red-500" />
                     )}
                     <Badge
-                      variant={selectedDevice.status === 'online' ? 'default' : 'destructive'}
-                      className={selectedDevice.status === 'online' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : ''}
+                      variant={
+                        selectedDevice.status === "online"
+                          ? "default"
+                          : "destructive"
+                      }
+                      className={
+                        selectedDevice.status === "online"
+                          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                          : ""
+                      }
                     >
                       {selectedDevice.status}
                     </Badge>
@@ -312,7 +500,9 @@ export default function DeviceSpace() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Last Seen</p>
-                  <p className="mt-1">{new Date(selectedDevice.lastSeen).toLocaleString()}</p>
+                  <p className="mt-1">
+                    {new Date(selectedDevice.lastSeen).toLocaleString()}
+                  </p>
                 </div>
               </div>
               <div className="flex gap-2">
@@ -329,4 +519,7 @@ export default function DeviceSpace() {
       </Dialog>
     </div>
   );
+}
+function useAuth(): { user: any } {
+  throw new Error("Function not implemented.");
 }
