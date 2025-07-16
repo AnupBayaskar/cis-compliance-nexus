@@ -13,6 +13,7 @@ const mockUsers: Record<string, User> = {
     organizationId: "",
     organizationName: "",
     teams: [],
+    createdAt: "2024-01-01T00:00:00.000Z",
   },
   "member@example.com": {
     id: "1",
@@ -22,6 +23,7 @@ const mockUsers: Record<string, User> = {
     organizationId: "org1",
     organizationName: "Acme Corporation",
     teams: ["team1", "team2"],
+    createdAt: "2024-01-15T00:00:00.000Z",
   },
   "validator@example.com": {
     id: "2",
@@ -31,6 +33,7 @@ const mockUsers: Record<string, User> = {
     organizationId: "org1",
     organizationName: "Acme Corporation",
     teams: ["team1", "team3"],
+    createdAt: "2024-02-01T00:00:00.000Z",
   },
   "admin@example.com": {
     id: "3",
@@ -40,6 +43,7 @@ const mockUsers: Record<string, User> = {
     organizationId: "org1",
     organizationName: "Acme Corporation",
     teams: ["team1"],
+    createdAt: "2024-01-20T00:00:00.000Z",
   },
   "org-lead@example.com": {
     id: "4",
@@ -49,6 +53,7 @@ const mockUsers: Record<string, User> = {
     organizationId: "org1",
     organizationName: "Acme Corporation",
     teams: ["team1", "team2", "team3"],
+    createdAt: "2024-01-10T00:00:00.000Z",
   },
 };
 
